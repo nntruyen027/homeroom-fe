@@ -300,7 +300,8 @@ export default function HollandSurvey() {
                         Khảo sát Holland
                     </h2>
                     <p style={{marginTop: 8, fontSize: 16, color: '#555'}}>
-                        Mời các em học sinh điền thông tin và thực hiện khảo sát
+                        Mời các em tham gia trắc nghiệm định hướng nghề nghiệp Holland – RIASEC để khám phá những lĩnh
+                        vực nghề phù hợp nhất với bản thân. 🌱
                     </p>
                 </div>
             </div>
