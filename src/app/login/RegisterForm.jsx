@@ -18,7 +18,6 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
     const searchTinhRef = useRef(null);
     const searchXaRef = useRef(null);
 
-    // Fetch Tỉnh
     const fetchTinh = async (reset = false) => {
         const page = reset ? 1 : tinhPagi.page;
         const result = await getTinh(searchTinh, page, tinhPagi.limit);
@@ -26,7 +25,6 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
         setTinhPagi({page, limit: tinhPagi.limit, total: result.total || 0});
     };
 
-    // Fetch Xã
     const fetchXa = async (reset = false) => {
         if (!tinhId) return;
         const page = reset ? 1 : xaPagi.page;
@@ -35,52 +33,56 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
         setXaPagi({page, limit: xaPagi.limit, total: result.total || 0});
     };
 
-    // Debounce search Tỉnh
     useEffect(() => {
         if (searchTinhRef.current) clearTimeout(searchTinhRef.current);
         searchTinhRef.current = setTimeout(() => fetchTinh(true), 300);
         return () => clearTimeout(searchTinhRef.current);
     }, [searchTinh]);
 
-    // Debounce search Xã
     useEffect(() => {
         if (searchXaRef.current) clearTimeout(searchXaRef.current);
         searchXaRef.current = setTimeout(() => fetchXa(true), 300);
         return () => clearTimeout(searchXaRef.current);
     }, [searchXa, tinhId]);
 
-    // Load thêm khi scroll Tỉnh
+    // Scroll pagination
     const handleTinhScroll = (e) => {
         const target = e.target;
-        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5) {
-            if (dsTinh.length < tinhPagi.total) {
-                setTinhPagi((prev) => ({...prev, page: prev.page + 1}));
-            }
+        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 && dsTinh.length < tinhPagi.total) {
+            setTinhPagi((prev) => ({...prev, page: prev.page + 1}));
         }
     };
 
-    // Load thêm khi scroll Xã
     const handleXaScroll = (e) => {
         const target = e.target;
-        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5) {
-            if (dsXa.length < xaPagi.total) {
-                setXaPagi((prev) => ({...prev, page: prev.page + 1}));
-            }
+        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 && dsXa.length < xaPagi.total) {
+            setXaPagi((prev) => ({...prev, page: prev.page + 1}));
         }
     };
 
-    // Khi page tăng thì load thêm
     useEffect(() => {
-        if (tinhPagi.page > 1) fetchTinh();
+        if (tinhPagi.page > 1) {
+            const fetch = async () => {
+                await fetchTinh();
+            };
+            fetch();
+        }
     }, [tinhPagi.page]);
+
     useEffect(() => {
-        if (xaPagi.page > 1) fetchXa();
+        if (xaPagi.page > 1) {
+            const fetch = async () => {
+                await fetchXa();
+            };
+            fetch();
+        }
     }, [xaPagi.page]);
 
-    // Validate tab cơ bản
     const validateBasicTab = async () => {
         try {
-            await form.validateFields(["hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId"]);
+            await form.validateFields([
+                "hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId",
+            ]);
             return true;
         } catch {
             return false;
@@ -90,17 +92,13 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
     const handleTabChange = async (key) => {
         if (key === "2") {
             const valid = await validateBasicTab();
-            if (!valid) {
-                setActiveTab("1");
-                return;
-            }
+            if (!valid) return setActiveTab("1");
         }
         setActiveTab(key);
     };
 
     const nextTab = async () => {
-        const valid = await validateBasicTab();
-        if (valid) setActiveTab("2");
+        if (await validateBasicTab()) setActiveTab("2");
     };
 
     const handleRegister = async () => {
@@ -116,8 +114,18 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
     };
 
     return (
-        <div className="w-1/2">
-            <Typography.Title>Đăng ký</Typography.Title>
+        <div style={{
+            width: "100%",
+            maxWidth: 400,
+            maxHeight: "100vh",
+            overflowY: "auto",
+            margin: "0 auto",
+            padding: "16px 16px 32px", // thêm padding-bottom
+            display: "flex",
+            flexDirection: "column",
+            scrollbarWidth: "none",
+        }} className={'hide-scrollbar'}>
+            <Typography.Title level={2}>Đăng ký</Typography.Title>
             <Form form={form} layout="vertical" size="middle" autoComplete="off">
                 <Tabs activeKey={activeTab} onChange={handleTabChange}>
                     <Tabs.TabPane tab="Thông tin cơ bản" key="1">
@@ -136,7 +144,6 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                    rules={[{required: true, message: "Vui lòng nhập bộ môn"}]}><Input/></Form.Item>
                         <Form.Item label="Chức vụ" name="chucVu"
                                    rules={[{required: true, message: "Vui lòng nhập chức vụ"}]}><Input/></Form.Item>
-
                         <Form.Item label="Tỉnh/Thành phố" name="tinhId"
                                    rules={[{required: true, message: "Vui lòng chọn tỉnh/thành phố"}]}>
                             <Select
@@ -147,7 +154,7 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                     setTinhId(val);
                                     form.setFieldsValue({xaId: null});
                                     setDsXa([]);
-                                    setXaPagi({page: 1, limit: 20, total: 0})
+                                    setXaPagi({page: 1, limit: 20, total: 0});
                                 }}
                                 onSearch={(val) => setSearchTinh(val)}
                                 filterOption={false}
@@ -158,7 +165,6 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                 {dsTinh.map(t => <Option key={t.id} value={t.id}>{t.ten}</Option>)}
                             </Select>
                         </Form.Item>
-
                         <Form.Item label="Xã/Phường" name="xaId"
                                    rules={[{required: true, message: "Vui lòng chọn xã/phường"}]}>
                             <Select
@@ -175,10 +181,8 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                 {dsXa.map(x => <Option key={x.id} value={x.id}>{x.ten}</Option>)}
                             </Select>
                         </Form.Item>
-
                         <Button type="primary" block onClick={nextTab}>Tiếp tục</Button>
                     </Tabs.TabPane>
-
                     <Tabs.TabPane tab="Thông tin đăng nhập" key="2">
                         <Form.Item label="Tên tài khoản" name="username" rules={[{
                             required: true,
@@ -188,22 +192,18 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                             required: true,
                             message: "Vui lòng nhập mật khẩu"
                         }]}><Input.Password/></Form.Item>
-                        <Form.Item label="Nhập lại mật khẩu" name="repeatPass" dependencies={["password"]}
-                                   rules={[
-                                       {required: true, message: "Vui lòng nhập lại mật khẩu"},
-                                       ({getFieldValue}) => ({
-                                           validator(_, value) {
-                                               if (!value || getFieldValue("password") === value) return Promise.resolve();
-                                               return Promise.reject(new Error("Mật khẩu nhập lại không khớp"))
-                                           }
-                                       })
-                                   ]}
-                        ><Input.Password/></Form.Item>
-
+                        <Form.Item label="Nhập lại mật khẩu" name="repeatPass" dependencies={["password"]} rules={[
+                            {required: true, message: "Vui lòng nhập lại mật khẩu"},
+                            ({getFieldValue}) => ({
+                                validator(_, value) {
+                                    if (!value || getFieldValue("password") === value) return Promise.resolve();
+                                    return Promise.reject(new Error("Mật khẩu nhập lại không khớp"));
+                                }
+                            })
+                        ]}><Input.Password/></Form.Item>
                         <Button type="primary" block onClick={handleRegister}>Đăng ký</Button>
                     </Tabs.TabPane>
                 </Tabs>
-
                 <Divider>Hoặc</Divider>
                 <Button block onClick={onSwitch}>Quay lại đăng nhập</Button>
             </Form>

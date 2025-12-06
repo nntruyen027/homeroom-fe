@@ -92,7 +92,8 @@ export default function RootLayout({children}) {
                 />
             </Sider>
             <Layout>
-                <Header className="flex justify-between items-center pl-0 pr-4" style={{background: colorBgContainer}}>
+                <Header className="flex justify-between items-center pl-0 pr-4"
+                        style={{paddingLeft: 0, background: colorBgContainer}}>
                     <div className="flex items-center gap-4">
                         <Button type="text" icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                                 onClick={() => setCollapsed(!collapsed)}

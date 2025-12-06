@@ -1,13 +1,23 @@
-"use client";
+'use client';
 
 import {Button, Divider, Form, Input, Typography} from "antd";
 
 export default function LoginForm({form, onLogin, onSwitch}) {
     return (
-        <div style={{width: '50%'}}>
-            <Typography.Title>Đăng nhập</Typography.Title>
+        <div style={{
+            width: '100%',
+            maxWidth: 400,
+            margin: '0 auto',
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+        }}>
+            <Typography.Title level={2} style={{textAlign: 'center'}}>Đăng nhập</Typography.Title>
 
-            <Form form={form} layout="vertical" size="large">
+            <Form form={form} layout="vertical" size="middle" autoComplete="off">
                 <Form.Item
                     label="Tên tài khoản"
                     name="username"
