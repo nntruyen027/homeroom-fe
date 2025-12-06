@@ -4,6 +4,8 @@ import "./globals.css";
 import {usePathname, useRouter} from "next/navigation";
 import {useEffect} from "react";
 import {isTokenValid} from "@/utils/auth";
+import "antd/dist/reset.css"; // v5
+
 
 export default function RootLayout({children}) {
     const router = useRouter();

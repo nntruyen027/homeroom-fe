@@ -28,3 +28,7 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
+
+.ant-modal {
+    z-index: 99999;
+}

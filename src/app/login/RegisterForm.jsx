@@ -4,6 +4,7 @@ import {Button, DatePicker, Divider, Form, Input, Radio, Select, Tabs, Typograph
 import {useEffect, useRef, useState} from "react";
 import {getTinh, getXa} from "@/services/auth";
 
+//TODO: làm chức năng yêu cầu mật khẩu phức tạp
 export default function RegisterForm({form, onRegister, onSwitch}) {
     const [activeTab, setActiveTab] = useState("1");
     const [dsTinh, setDsTinh] = useState([]);
