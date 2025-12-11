@@ -48,6 +48,12 @@ const adminMenuItems = [
             {key: '/quan-tri-vien/lop', label: 'Lớp'},
         ],
     },
+    {
+        key: '/quan-tri-vien/tep-tin',
+        label: 'Tệp tin',
+        icon: <SafetyOutlined/>,
+
+    }
 ];
 
 export default function RootLayout({children}) {
@@ -56,7 +62,7 @@ export default function RootLayout({children}) {
     const router = useRouter();
 
     const {token: {colorBgContainer, borderRadiusLG}} = theme.useToken();
-    const {SetIsUpdatePassOpen} = useModal();
+    const {SetIsUpdatePassOpen, setIsEditOpen, isEditOpen} = useModal();
 
     // Fetch userInfo & auth check
     useEffect(() => {
@@ -66,9 +72,8 @@ export default function RootLayout({children}) {
             router.replace('/login');
             return;
         }
-
         setUserInfo(info);
-    }, [router]);
+    }, [router, isEditOpen]);
 
     if (!userInfo) return null; // tránh render trước khi có user
 
@@ -88,7 +93,7 @@ export default function RootLayout({children}) {
                     key: "profile",
                     label: "Thông tin tài khoản",
                     icon: <UserOutlined/>,
-                    onClick: () => alert("Thông tin tài khoản"),
+                    onClick: () => setIsEditOpen(),
                 },
                 {
                     key: "password",

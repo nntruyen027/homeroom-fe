@@ -70,7 +70,11 @@ export default function Page() {
                 (pagination.current - 1) * pagination.pageSize + index + 1
         },
         {title: "Tên trường", dataIndex: "ten", key: "ten", width: 250},
-        {title: "Logo", dataIndex: "logo", key: "logo"},
+        {
+            title: "Logo", dataIndex: "logo", key: "logo", render: (text, record, index) => {
+                return text ? (<img src={text} alt={record.ten} width="40" height='40'/>) : (<></>);
+            }
+        },
         {
             title: 'Địa chỉ chi tiết',
             dataIndex: "diaChiChiTiet",

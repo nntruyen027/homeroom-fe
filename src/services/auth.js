@@ -111,3 +111,19 @@ export async function doiMatKhau(body) {
         throw new Error(error.response?.data?.message || "Lỗi khi đổi mật khẩu!")
     }
 }
+
+export async function capNhatThongTinQuanTri(body) {
+    try {
+        const res = await axios.put(`${process.env.NEXT_PUBLIC_BE}/quan-tri`, body, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Lỗi khi cập nhật thông tin!")
+    }
+}
+
