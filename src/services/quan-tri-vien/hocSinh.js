@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/quan-tri/hocsinh',
+    baseURL: process.env.NEXT_PUBLIC_BE + '/quan-tri/hoc-sinh',
     headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("jwtToken")}`,
