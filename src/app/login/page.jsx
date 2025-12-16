@@ -31,8 +31,8 @@ export default function LoginPage() {
         try {
             const {token, user} = await login(formLogin.getFieldValue()?.username, formLogin.getFieldValue()?.password);
             api.success("Đăng nhập thành công");
-            if (user.role === 'TEACHER') router.push("/giao-vien");
-            else if (user.role === 'ADMIN') router.push("/quan-tri-vien/dashboard");
+            if (user.roles?.includes('TEACHER')) router.push("/giao-vien");
+            else if (user.roles?.includes('ADMIN')) router.push("/quan-tri-vien/dashboard");
             else router.push("/hoc-sinh");
         } catch (e) {
             api.error(e.message);
@@ -41,7 +41,11 @@ export default function LoginPage() {
 
     const onFinishRegister = async () => {
         try {
-            await dangKyGiaoVien(formRegister.getFieldValue());
+            await dangKyGiaoVien({
+                    ...formRegister.getFieldValue(),
+                    ngaySinh: formRegister.getFieldValue().ngaySinh.format("YYYY-MM-DD")
+                }
+            );
             api.success("Đăng ký thành công");
             setIsRegister(false);
         } catch (e) {

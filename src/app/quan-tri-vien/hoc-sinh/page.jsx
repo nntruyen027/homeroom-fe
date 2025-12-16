@@ -3,6 +3,7 @@
 import {useEffect, useRef, useState} from "react";
 import {App, Button, Dropdown, Form, Input, Modal, Select, Table} from "antd";
 import {layDsTruong, layTatCaLopThuocTruong} from "@/services/quan-tri-vien/truong";
+import {layDsHocSinhTheoLop} from "@/services/quan-tri-vien/hocSinh";
 import {suaLop, xoaLop} from "@/services/quan-tri-vien/lop";
 import {useDebounce} from "@/hook/data";
 import {EllipsisOutlined} from "@ant-design/icons";
@@ -35,6 +36,12 @@ export default function Page() {
     const [truongPagi, setTruongPagi] = useState({page: 1, limit: 20, total: 0});
     const [selectedTruongId, setSelectedTruongId] = useState(null);
 
+    // Select lớp ngoài bảng
+    const [dsLop, setDsLop] = useState([]);
+    const [searchLop, setSearchLop] = useState("");
+    const [lopPagi, setLopPagi] = useState({page: 1, limit: 20, total: 0});
+    const [selectedLopId, setSelectedLopId] = useState(null);
+
     // Select trường trong modal
     const [dsTruong2, setDsTruong2] = useState([]);
     const [searchTruong2, setSearchTruong2] = useState("");
@@ -48,6 +55,7 @@ export default function Page() {
 
     const searchTruongRef = useRef(null);
     const searchTruongRef2 = useRef(null);
+    const searchLopRef = useRef(null);
 
 
     /* --------------------------------------------------
@@ -62,18 +70,24 @@ export default function Page() {
             render: (_, __, index) =>
                 (pagination.current - 1) * pagination.pageSize + index + 1,
         },
-        {title: "Tên lớp", dataIndex: "ten", key: "ten", width: 250},
+        {title: "Tên học sinh", dataIndex: "hoTen", key: "hoTen", width: 250},
         {
-            title: "Trường",
-            dataIndex: "truong",
-            key: "truong",
-            render: (t) => t?.ten,
+            title: "Giới tính",
+            dataIndex: "laNam",
+            key: "laNam",
+            render: (laNam) => laNam ? 'Nam' : 'Nữ'
         },
         {
-            title: "Giáo viên chủ nhiệm",
-            dataIndex: "giaoVien",
-            key: "giaoVien",
-            render: (giaoVien) => giaoVien?.hoTen
+            title: "Tên cha",
+            dataIndex: "tenCha",
+            key: "tenCha",
+
+        },
+        {
+            title: "Tên mẹ",
+            dataIndex: "tenMe",
+            key: "tenMe",
+
         },
         {
             title: "Thao tác",
@@ -102,7 +116,7 @@ export default function Page() {
 
         setLoading(true);
         try {
-            const res = await layTatCaLopThuocTruong(selectedTruongId, {
+            const res = await layDsHocSinhTheoLop(selectedLopId, {
                 page,
                 limit: pageSize,
                 search
@@ -151,6 +165,25 @@ export default function Page() {
         setTruongPagi2({...truongPagi2, page, total: res.total || 0});
     };
 
+    const fetchLopThuocTruong = async (reset = false) => {
+        if (!selectedTruongId) return;
+        const page = reset ? 1 : lopPagi.page;
+
+        try {
+            const res = await layTatCaLopThuocTruong(selectedTruongId, {
+                search: searchLop,
+                page,
+                limit: lopPagi.limit,
+            });
+
+            setDsLop(reset ? res.data : [...dsLop, ...res.data]);
+            setLopPagi({...lopPagi, page, total: res.total || 0});
+
+        } catch (err) {
+            message.error(err.message || "Lỗi khi tải dữ liệu lớp");
+        }
+    };
+
 
     /* --------------------------------------------------
      * 4. CRUD
@@ -159,9 +192,7 @@ export default function Page() {
         setEditingRecord(record);
 
         form.setFieldsValue({
-            ten: record?.ten,
-            truongId: record?.truong?.id,
-            hinhAnh: record?.hinhAnh,
+            ...record
         });
 
         setModalVisible(true);
@@ -212,18 +243,35 @@ export default function Page() {
         }
     };
 
+    const handleLopScroll = (e) => {
+        const {scrollTop, offsetHeight, scrollHeight} = e.target;
+        if (scrollTop + offsetHeight >= scrollHeight - 5 &&
+            dsLop.length < lopPagi.total) {
+            setLopPagi(prev => ({...prev, page: prev.page + 1}));
+        }
+    };
+
 
     /* --------------------------------------------------
      * 6. EFFECTS
      * -------------------------------------------------- */
 
-    // Load bảng khi chọn trường
+    // Load bảng khi chọn lớp
     useEffect(() => {
-        if (selectedTruongId) fetchData();
+        if (selectedLopId) fetchData();
+    }, [selectedLopId]);
+
+    // Load lớp khi chọn trường
+    useEffect(() => {
+        setSelectedLopId(null);
+        setDsLop([]);
+        setLopPagi({page: 1, limit: 20, total: 0});
+        setSearchLop("");
+        if (selectedTruongId) fetchLopThuocTruong(true);
     }, [selectedTruongId]);
 
 
-    // Tìm kiếm lớp
+    // Tìm kiếm học sinh
     useEffect(() => {
         fetchData(1, pagination.pageSize, debouncedSearch);
     }, [debouncedSearch]);
@@ -236,6 +284,11 @@ export default function Page() {
         return () => clearTimeout(searchTruongRef.current);
     }, [searchTruong]);
 
+    useEffect(() => {
+        clearTimeout(searchLopRef.current);
+        searchLopRef.current = setTimeout(() => fetchLopThuocTruong(true), 300);
+        return () => clearTimeout(searchLopRef.current);
+    }, [searchLop]);
 
     // Search + debounce cho select trường 2
     useEffect(() => {
@@ -252,6 +305,11 @@ export default function Page() {
     useEffect(() => {
         if (truongPagi.page > 1) fetchTruong(false);
     }, [truongPagi.page]);
+
+    // Load more lớp
+    useEffect(() => {
+        if (lopPagi.page > 1) fetchLopThuocTruong(false);
+    }, [lopPagi.page]);
 
 
     // Load more trường 2
@@ -283,7 +341,7 @@ export default function Page() {
                     filterOption={false}
                     notFoundContent={null}
                     onPopupScroll={handleTruongScroll}
-                    style={{minWidth: 250}}
+                    style={{minWidth: 320}}
                 >
                     {dsTruong.map((t) => (
                         <Select.Option key={t.id} value={t.id}>
@@ -291,8 +349,25 @@ export default function Page() {
                         </Select.Option>
                     ))}
                 </Select>
+                <Select
+                    showSearch
+                    placeholder="Chọn lớp *"
+                    value={selectedLopId}
+                    onChange={setSelectedLopId}
+                    onSearch={setSearchLop}
+                    filterOption={false}
+                    notFoundContent={null}
+                    onPopupScroll={handleLopScroll}
+                    style={{minWidth: 150}}
+                >
+                    {dsLop.map((t) => (
+                        <Select.Option key={t.id} value={t.id}>
+                            {t.ten}
+                        </Select.Option>
+                    ))}
+                </Select>
                 <Input.Search
-                    placeholder="Tìm kiếm lớp..."
+                    placeholder="Tìm kiếm học sinh..."
                     allowClear
                     style={{width: 300}}
                     onChange={(e) => setSearchText(e.target.value)}
@@ -313,7 +388,7 @@ export default function Page() {
 
             {/* EDIT MODAL */}
             <Modal
-                title="Sửa lớp"
+                title="Sửa học sinh"
                 open={modalVisible}
                 onOk={handleSave}
                 onCancel={() => {
@@ -325,7 +400,7 @@ export default function Page() {
                 <Form form={form} layout="vertical">
 
                     <Form.Item
-                        label="Tên lớp"
+                        label="Tên học sinh"
                         name="ten"
                         rules={[{required: true, message: "Không được để trống"}]}
                     >

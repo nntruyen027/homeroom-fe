@@ -8,7 +8,6 @@ import {
     MenuUnfoldOutlined,
     SafetyOutlined,
     TableOutlined,
-    UsergroupAddOutlined,
     UserOutlined
 } from '@ant-design/icons';
 
@@ -18,41 +17,16 @@ import {useModal} from "@/store/modal";
 
 const {Sider, Header, Content} = Layout;
 
-const roleTrans = {
-    ADMIN: "Quản trị viên",
-    TEACHER: "Giáo viên",
-    STUDENT: "Học sinh",
-};
 
 const adminMenuItems = [
-    {key: '/quan-tri-vien/dashboard', label: 'Dashboard', icon: <BarChartOutlined/>},
-
-    {
-        key: 'quan-ly-nguoi-dung',
-        label: 'Quản lý người dùng',
-        icon: <UsergroupAddOutlined/>,
-        children: [
-            {key: '/quan-tri-vien/giao-vien', label: 'Giáo viên'},
-            {key: '/quan-tri-vien/hoc-sinh', label: 'Học sinh'},
-        ],
-    },
-
+    {key: '/giao-vien/dashboard', label: 'Dashboard', icon: <BarChartOutlined/>},
     {
         key: 'danh-muc',
         label: 'Quản lý danh mục',
         icon: <TableOutlined/>,
         children: [
-            {key: '/quan-tri-vien/tinh', label: 'Tỉnh/Thành phố'},
-            {key: '/quan-tri-vien/xa', label: 'Xã/Phường'},
-            {key: '/quan-tri-vien/truong', label: 'Trường'},
-            {key: '/quan-tri-vien/lop', label: 'Lớp'},
+            {key: '/giao-vien/lop', label: 'Lớp'},
         ],
-    },
-    {
-        key: '/quan-tri-vien/tep-tin',
-        label: 'Tệp tin',
-        icon: <SafetyOutlined/>,
-
     }
 ];
 
@@ -68,16 +42,15 @@ export default function RootLayout({children}) {
     useEffect(() => {
         const info = JSON.parse(localStorage.getItem('userInfo') || "{}");
 
-        if (!info?.roles || !info.roles?.includes('ADMIN')) {
+        if (!info?.roles || !info.roles?.includes('TEACHER')) {
             router.replace('/login');
             return;
         }
         setUserInfo(info);
     }, [router, isEditOpen]);
 
-    if (!userInfo) return null; // tránh render trước khi có user
+    if (!userInfo) return null;
 
-    const userRole = roleTrans[userInfo.role] || "Người dùng";
     const userName = userInfo.hoTen || "Người dùng";
 
     const handleLogout = () => {
@@ -157,7 +130,7 @@ export default function RootLayout({children}) {
                             style={{fontSize: 16, width: 64, height: 64}}
                         />
                         <Typography.Text style={{fontSize: 18}}>
-                            Quản trị viên
+                            Giáo viên
                         </Typography.Text>
                     </div>
 

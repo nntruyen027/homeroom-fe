@@ -27,8 +27,9 @@ export default function InnerLayout({children}) {
                 const user = JSON.parse(localStorage.getItem("userInfo"));
                 if (!user) return;
 
-                if (user.role === "ADMIN") router.replace("/quan-tri-vien/dashboard");
-                else if (user.role === "TEACHER") router.replace("/giao-vien/dashboard");
+                if (user.roles?.includes("ADMIN")) router.replace("/quan-tri-vien/dashboard");
+                else if (user.roles?.includes("TEACHER")) router.replace("/giao-vien/dashboard");
+                else if (user.roles?.includes("PARENT")) router.replace("/phu-huynh/dashboard");
                 else router.replace("/hoc-sinh/dashboard");
             }
         };

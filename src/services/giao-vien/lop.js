@@ -1,17 +1,17 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/quan-tri/hoc-sinh',
+    baseURL: process.env.NEXT_PUBLIC_BE + '/giao-vien/lop',
     headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("jwtToken")}`,
     }
 });
 
-export async function layDsHocSinhTheoLop(lopId, {search, page, limit}) {
+export async function layDsLop({search, page, limit}) {
     try {
-        const res = await api.get(`/lop/${lopId}`, {
-            params: {search, page, limit}
+        const res = await api.get('', {
+            params: {page, limit, search}
         })
         return res.data;
     } catch (e) {
@@ -19,31 +19,29 @@ export async function layDsHocSinhTheoLop(lopId, {search, page, limit}) {
     }
 }
 
-
-export async function themHocSinh(hocSinh) {
+export async function taoLop(lop) {
     try {
-        const res = await api.post("", JSON.stringify(hocSinh));
+        const res = await api.post('', JSON.stringify(lop));
+        return res.data;
+    } catch (error) {
+        throw new Error(e.response?.data?.message);
+    }
+}
+
+
+export async function sua(id, lop) {
+    try {
+        const res = await api.put(`/${id}`, JSON.stringify(lop));
         return res.data;
     } catch (e) {
         throw new Error(e.response?.data?.message);
     }
 }
 
-export async function suaHocSinh(id, hocSinh) {
-    try {
-        const res = await api.put(`/${id}`, JSON.stringify(hocSinh));
-        return res.data;
-    } catch (e) {
-        throw new Error(e.response?.data?.message);
-    }
-}
-
-export async function xoaHocSinh(id) {
+export async function xoaLop(id) {
     try {
         await api.delete(`/${id}`);
     } catch (e) {
         throw new Error(e.response?.data?.message);
     }
 }
-
-
