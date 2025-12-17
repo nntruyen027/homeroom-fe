@@ -8,10 +8,10 @@ const api = axios.create({
     }
 });
 
-export async function layDsLop({search, page, limit}) {
+export async function layDsLop({search, page, limit, truongId}) {
     try {
         const res = await api.get('', {
-            params: {page, limit, search}
+            params: {page, limit, search, truongId}
         })
         return res.data;
     } catch (e) {

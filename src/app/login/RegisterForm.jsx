@@ -1,72 +1,19 @@
 'use client';
 
 import {Button, DatePicker, Divider, Form, Input, Radio, Select, Tabs, Typography} from "antd";
-import {useEffect, useRef, useState} from "react";
-import {getTinh, getXa} from "@/services/auth";
+import {useState} from "react";
 import {isStrongPassword} from "@/utils/valid";
+import {useTinhXaSelect} from "@/hook/useTinhXa";
 
 export default function RegisterForm({form, onRegister, onSwitch}) {
     const [activeTab, setActiveTab] = useState("1");
-    const [dsTinh, setDsTinh] = useState([]);
-    const [dsXa, setDsXa] = useState([]);
-    const [tinhId, setTinhId] = useState(null);
-    const [searchTinh, setSearchTinh] = useState("");
-    const [searchXa, setSearchXa] = useState("");
-    const [tinhPagi, setTinhPagi] = useState({page: 1, limit: 20, total: 0});
-    const [xaPagi, setXaPagi] = useState({page: 1, limit: 20, total: 0});
-    const {Option} = Select;
 
-    const searchTinhRef = useRef(null);
-    const searchXaRef = useRef(null);
+    const {
+        dsTinh, setSearchTinh, tinhPagi, setTinhPagi,
+        tinhId, setTinhId,
+        dsXa, setSearchXa, xaPagi, setXaPagi
+    } = useTinhXaSelect();
 
-    // ---------------- FETCH DATA ----------------
-    const fetchTinh = async (reset = false) => {
-        const page = reset ? 1 : tinhPagi.page;
-        const result = await getTinh(searchTinh, page, tinhPagi.limit);
-        setDsTinh(reset ? result.dsTinh : [...dsTinh, ...result.dsTinh]);
-        setTinhPagi({page, limit: tinhPagi.limit, total: result.total || 0});
-    };
-
-    const fetchXa = async (reset = false) => {
-        if (!tinhId) return;
-        const page = reset ? 1 : xaPagi.page;
-        const result = await getXa(searchXa, tinhId, page, xaPagi.limit);
-        setDsXa(reset ? result.dsXa : [...dsXa, ...result.dsXa]);
-        setXaPagi({page, limit: xaPagi.limit, total: result.total || 0});
-    };
-
-    // ---------------- EFFECTS ----------------
-    useEffect(() => {
-        if (searchTinhRef.current) clearTimeout(searchTinhRef.current);
-        searchTinhRef.current = setTimeout(() => fetchTinh(true), 300);
-        return () => clearTimeout(searchTinhRef.current);
-    }, [searchTinh]);
-
-    useEffect(() => {
-        if (searchXaRef.current) clearTimeout(searchXaRef.current);
-        searchXaRef.current = setTimeout(() => fetchXa(true), 300);
-        return () => clearTimeout(searchXaRef.current);
-    }, [searchXa, tinhId]);
-
-    useEffect(() => {
-        if (tinhPagi.page > 1) fetchTinh();
-    }, [tinhPagi.page]);
-    useEffect(() => {
-        if (xaPagi.page > 1) fetchXa();
-    }, [xaPagi.page]);
-
-    // ---------------- SCROLL ----------------
-    const handleTinhScroll = (e) => {
-        const t = e.target;
-        if (t.scrollTop + t.offsetHeight >= t.scrollHeight - 5 && dsTinh.length < tinhPagi.total)
-            setTinhPagi(prev => ({...prev, page: prev.page + 1}));
-    };
-
-    const handleXaScroll = (e) => {
-        const t = e.target;
-        if (t.scrollTop + t.offsetHeight >= t.scrollHeight - 5 && dsXa.length < xaPagi.total)
-            setXaPagi(prev => ({...prev, page: prev.page + 1}));
-    };
 
     // ---------------- VALIDATION ----------------
     const validateBasicTab = async () => {
@@ -127,27 +74,37 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                    rules={[{required: true, message: "Vui lòng nhập chức vụ"}]}><Input/></Form.Item>
                         <Form.Item label="Tỉnh/Thành phố" name="tinhId"
                                    rules={[{required: true, message: "Vui lòng chọn tỉnh/thành phố"}]}>
-                            <Select showSearch placeholder="Chọn tỉnh/thành phố" value={form.getFieldValue("tinhId")}
-                                    onChange={(val) => {
+                            <Select showSearch onSearch={setSearchTinh}
+                                    onPopupScroll={e => {
+                                        if (e.target.scrollTop + e.target.offsetHeight >= e.target.scrollHeight - 5)
+                                            setTinhPagi(p => ({...p, page: p.page + 1}));
+                                    }}
+                                    onChange={val => {
                                         setTinhId(val);
                                         form.setFieldsValue({xaId: null});
-                                        setDsXa([]);
-                                        setXaPagi({page: 1, limit: 20, total: 0});
                                     }}
-                                    onSearch={setSearchTinh} filterOption={false} notFoundContent={null}
-                                    dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
-                                    onPopupScroll={handleTinhScroll}>
-                                {dsTinh.map(t => <Option key={t.id} value={t.id}>{t.ten}</Option>)}
+                                    filterOption={false}
+                            >
+                                {dsTinh.map(t => (
+                                    <Select.Option key={t.id} value={t.id}>{t.ten}</Select.Option>
+                                ))}
                             </Select>
                         </Form.Item>
                         <Form.Item label="Xã/Phường" name="xaId"
                                    rules={[{required: true, message: "Vui lòng chọn xã/phường"}]}>
-                            <Select showSearch placeholder="Chọn xã/phường" value={form.getFieldValue("xaId")}
-                                    disabled={!dsXa.length}
-                                    onSearch={setSearchXa} filterOption={false} notFoundContent={null}
-                                    dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
-                                    onPopupScroll={handleXaScroll}>
-                                {dsXa.map(x => <Option key={x.id} value={x.id}>{x.ten}</Option>)}
+                            <Select
+                                showSearch
+                                disabled={!tinhId}
+                                onSearch={setSearchXa}
+                                onPopupScroll={e => {
+                                    if (e.target.scrollTop + e.target.offsetHeight >= e.target.scrollHeight - 5)
+                                        setXaPagi(p => ({...p, page: p.page + 1}));
+                                }}
+                                filterOption={false}
+                            >
+                                {dsXa.map(x => (
+                                    <Select.Option key={x.id} value={x.id}>{x.ten}</Select.Option>
+                                ))}
                             </Select>
                         </Form.Item>
                         <Button type="primary" block onClick={nextTab}>Tiếp tục</Button>

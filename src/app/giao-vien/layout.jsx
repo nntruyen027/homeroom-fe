@@ -26,6 +26,7 @@ const adminMenuItems = [
         icon: <TableOutlined/>,
         children: [
             {key: '/giao-vien/lop', label: 'Lớp'},
+            {key: '/giao-vien/hoc-sinh', label: 'Học sinh'},
         ],
     }
 ];

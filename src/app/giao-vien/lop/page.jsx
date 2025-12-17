@@ -3,9 +3,9 @@
 import {useEffect, useRef, useState} from "react";
 import {App, Button, Dropdown, Form, Input, Modal, Select, Table} from "antd";
 import {layDsLop, sua, taoLop, xoaLop} from "@/services/giao-vien/lop";
-import {layDsTruong} from "@/services/giao-vien/truong";
 import {useDebounce} from "@/hook/data";
 import {EllipsisOutlined} from "@ant-design/icons";
+import {useTruongLopSelect} from "@/hook/useTruongLop";
 
 
 export default function Page() {
@@ -25,13 +25,12 @@ export default function Page() {
     const [editingLop, setEditingLop] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
 
-    const [dsTruong, setDsTruong] = useState([]);
     const [truongId, setTinhId] = useState(null);
-    const [searchTruong, setSearchTruong] = useState("");
-    const [truongPagi, setTruongPagi] = useState({page: 1, limit: 20, total: 0});
     const [searchText, setSearchText] = useState("");
 
     const debouncedSearch = useDebounce(searchText, 400);
+
+    const {dsTruong, setSearchTruong, setTruongPagi, truongPagi} = useTruongLopSelect();
 
 
     /* --------------------------------------------
@@ -61,7 +60,7 @@ export default function Page() {
             width: 200,
             render: (truong) => truong?.ten || ""
         },
-        
+
         {
             title: "Thao tác",
             key: "thaoTac",
@@ -106,14 +105,6 @@ export default function Page() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const fetchTruong = async (reset = false) => {
-        const page = reset ? 1 : truongPagi.page;
-        const result = await layDsTruong({search: searchTruong, page, limit: truongPagi.limit});
-
-        setDsTruong(reset ? result.data : [...dsTruong, ...result.data]);
-        setTruongPagi({page, limit: truongPagi.limit, total: result.total || 0});
     };
 
 
@@ -169,20 +160,6 @@ export default function Page() {
 
 
     /* --------------------------------------------
-     * 7. INFINITE SCROLL SELECT
-     * -------------------------------------------- */
-    const handleTruongScroll = (e) => {
-        const target = e.target;
-        if (
-            target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 &&
-            dsTruong.length < truongPagi.total
-        ) {
-            setTruongPagi(prev => ({...prev, page: prev.page + 1}));
-        }
-    };
-
-
-    /* --------------------------------------------
      * 8. USE EFFECTS
      * -------------------------------------------- */
     useEffect(() => {
@@ -194,14 +171,8 @@ export default function Page() {
     }, [debouncedSearch]);
 
     useEffect(() => {
-        if (searchTruongRef.current) clearTimeout(searchTruongRef.current);
-        searchTruongRef.current = setTimeout(() => fetchTruong(true), 300);
-        return () => clearTimeout(searchTruongRef.current);
-    }, [searchTruong]);
-
-    useEffect(() => {
-        if (truongPagi.page > 1) fetchTruong(false);
-    }, [truongPagi.page]);
+        console.log(dsTruong);
+    }, [dsTruong]);
 
 
     /* --------------------------------------------
@@ -273,13 +244,15 @@ export default function Page() {
                         <Select
                             showSearch
                             placeholder="Chọn trường"
+                            onPopupScroll={e => {
+                                if (e.target.scrollTop + e.target.offsetHeight >= e.target.scrollHeight - 5)
+                                    setTruongPagi(p => ({...p, page: p.page + 1}));
+                            }}
                             value={form.getFieldValue("truongId")}
-                            onSearch={(val) => setSearchTruong(val)}
+                            onSearch={setSearchTruong}
                             filterOption={false}
-                            notFoundContent={null}
-                            onPopupScroll={handleTruongScroll}
                         >
-                            {dsTruong.map(t => (
+                            {dsTruong?.map(t => (
                                 <Select.Option key={t.id} value={t.id}>{t.ten}</Select.Option>
                             ))}
                         </Select>
