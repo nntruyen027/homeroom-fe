@@ -23,6 +23,15 @@ export async function layDsHocSinhTheoLop(lopId, {search, limit, page}) {
     }
 }
 
+export async function layHocSinhTheoId(id) {
+    try {
+        const res = await api.get(`/${id}`,);
+        return res.data;
+    } catch (error) {
+        throw new Error(e.response?.data?.message);
+    }
+}
+
 export async function taoHocSinh(body) {
     try {
         const res = await api.post('', JSON.stringify(body));
@@ -92,7 +101,6 @@ export async function layFileImport() {
 
 export async function importHocSinh(lopId, formData) {
     try {
-        // không dùng api.headers mặc định "Content-Type"
         const response = await axios.post(
             process.env.NEXT_PUBLIC_BE + `/giao-vien/hoc-sinh/lop/${lopId}/importer`,
             formData,

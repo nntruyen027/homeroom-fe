@@ -1,22 +1,13 @@
 'use client';
 
-import {useEffect, useRef, useState} from "react";
-import {App, Button, DatePicker, Dropdown, Form, Input, Modal, Radio, Select, Table} from "antd";
+import {useEffect, useState} from "react";
+import {App, Button, Dropdown, Form, Input, Modal, Select, Table} from "antd";
 import {sua} from "@/services/giao-vien/lop";
 import {useDebounce} from "@/hook/data";
 import {EllipsisOutlined} from "@ant-design/icons";
 import {useTruongLopSelect} from "@/hook/useTruongLop";
-import {
-    importHocSinh,
-    layDsHocSinhTheoLop,
-    layFileImport,
-    suaHocSinh,
-    taoHocSinh,
-    xoaHocSinh
-} from "@/services/giao-vien/hoc-sinh";
-import {useTinhXaSelect} from "@/hook/useTinhXa";
 import dayjs from 'dayjs';
-import {useRouter} from "next/navigation";
+import {layDsThongBao, suaThongBao, taoThongBao, xoaThongBao} from "@/services/giao-vien/thong-bao";
 
 
 export default function Page() {
@@ -38,14 +29,9 @@ export default function Page() {
     const [lopId, setLopId] = useState();
 
     const [searchText, setSearchText] = useState("");
-    const [importing, setImporting] = useState(false);
 
     const debouncedSearch = useDebounce(searchText, 400);
 
-    // -----------------------------
-    const fileInputRef = useRef(null);
-
-    const router = useRouter();
 
     const {
         dsTruong,
@@ -59,19 +45,6 @@ export default function Page() {
         setTruongId,
         truongId
     } = useTruongLopSelect();
-
-    const {
-        dsTinh,
-        dsXa,
-        setSearchTinh,
-        setSearchXa,
-        setTinhId,
-        setTinhPagi,
-        setXaPagi,
-        tinhId,
-        tinhPagi,
-        xaPagi
-    } = useTinhXaSelect()
 
 
     /* --------------------------------------------
@@ -92,33 +65,26 @@ export default function Page() {
             render: (text, record, index) =>
                 (pagination.current - 1) * pagination.pageSize + index + 1
         },
-        {title: "Tên học sinh", dataIndex: "hoTen", key: "hoTen", width: 250},
-        {title: "Tên đăng nhập", dataIndex: "username", key: "username"},
-        {title: "Giới tính", dataIndex: "laNam", width: 100, key: "laNam", render: (obj) => obj ? 'Nam' : 'Nữ'},
-        {title: "Môn học yêu thích", dataIndex: "monHocYeuThich", key: "monHocYeuThich"},
+        {title: "Tiêu đề", dataIndex: "tieuDe", key: "tieuDe", width: 250},
+        {title: "Nội dung", dataIndex: "noiDung", key: "noiDung"},
+        {
+            title: "Thời gian tạo", dataIndex: "thoiGianTao", key: "thoiGianTao", render: (text, record, index) => {
+                return (dayjs(text).format("DD/MM/YYYY HH:mm:ss"))
+            }
+        },
         {
             title: "Thao tác",
             key: "thaoTac",
             render: (_, record) => {
+                record.id = record.thongBaoId;
                 const items = [
-                    {
-                        key: "xem",
-                        label: "Xem hồ sơ",
-                        onClick: () => {
-                            router.push("/giao-vien/hoc-sinh/" + record.id);
-                        }
-                    },
                     {
                         key: "sua",
                         label: "Cập nhật",
                         onClick: () => {
                             setEditingLop(record);
-                            setTinhId(record.xa?.tinh?.id);
                             form.setFieldsValue({
                                 ...record,
-                                tinhId: record.xa?.tinh?.id,
-                                xaId: record.xa?.id,
-                                ngaySinh: dayjs(record.ngaySinh)
                             });
                             setModalVisible(true);
                         },
@@ -156,7 +122,7 @@ export default function Page() {
         }
         setLoading(true);
         try {
-            const res = await layDsHocSinhTheoLop(lopId, {page, limit: pageSize, search});
+            const res = await layDsThongBao({lopId, page, limit: pageSize, search});
             setData(res.data || []);
             setPagination({
                 current: res.page || page,
@@ -164,7 +130,7 @@ export default function Page() {
                 total: res.totalElements || 0,
             });
         } catch (e) {
-            message.error(e.message || "Lỗi khi tải danh sách học sinh");
+            message.error(e.message || "Lỗi khi tải danh sách thông báo");
         } finally {
             setLoading(false);
         }
@@ -185,18 +151,17 @@ export default function Page() {
             const values = await form.validateFields();
 
             if (editingLop) {
-                await suaHocSinh(editingLop.id, {
+                await suaThongBao(editingLop.id, {
                     ...values,
                     lopId
 
                 });
                 message.success("Cập nhật thành công");
             } else {
-                await taoHocSinh({
-                    ...values,
-                    lopId
+                await taoThongBao(lopId, {
+                    ...values
                 });
-                message.success("Thêm học sinh thành công");
+                message.success("Thêm thông báo thành công");
             }
 
             setModalVisible(false);
@@ -213,40 +178,6 @@ export default function Page() {
      * 6. DOWNLOAD / IMPORT FILE
      * -------------------------------------------- */
 
-    const handleDownloadTemplate = async () => {
-        try {
-            await layFileImport();
-        } catch (e) {
-            message.error(e.message);
-        }
-    };
-
-    const handleImportFile = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append("file", file);
-        if (!lopId) {
-            message.warning('Vui lòng chọn lớp');
-            return
-        }
-
-        try {
-            setImporting(true);
-
-            await importHocSinh(lopId, formData);
-
-            message.success("Import thành công");
-            await fetchData(pagination.current, pagination.pageSize, debouncedSearch);
-
-        } catch (err) {
-            message.error(err.message || err || "Lỗi import");
-        } finally {
-            setImporting(false);
-            e.target.value = null;
-        }
-    };
     /* --------------------------------------------
      * 8. USE EFFECTS
      * -------------------------------------------- */
@@ -275,7 +206,7 @@ export default function Page() {
                 <div style={{display: "flex", gap: 8}}>
                     {/* SEARCH BOX */}
                     <Input.Search
-                        placeholder="Tìm kiếm học sinh..."
+                        placeholder="Tìm kiếm thông báo..."
                         allowClear
                         style={{width: 300}}
                         onChange={(e) => setSearchText(e.target.value)}
@@ -333,19 +264,8 @@ export default function Page() {
 
                 {/* ACTION BUTTONS */}
                 <div style={{display: "flex", gap: 8}}>
-                    <Button onClick={handleDownloadTemplate}>Tải file mẫu</Button>
 
-                    <Button disabled={!lopId} onClick={() => fileInputRef.current.click()} loading={importing}>
-                        Import file
-                    </Button>
 
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{display: "none"}}
-                        accept=".xlsx"
-                        onChange={handleImportFile}
-                    />
                     <Button
                         type="primary"
                         disabled={!lopId}
@@ -359,7 +279,7 @@ export default function Page() {
                             setEditingLop(null);
                         }}
                     >
-                        Thêm học sinh
+                        Thêm thông báo
                     </Button>
 
                 </div>
@@ -377,7 +297,7 @@ export default function Page() {
 
             {/* ADD / EDIT MODAL */}
             <Modal
-                title={editingLop ? "Sửa học sinh" : "Thêm học sinh"}
+                title={editingLop ? "Sửa thông báo" : "Thêm thông báo"}
                 open={modalVisible}
                 onOk={handleOk}
                 onCancel={() => {
@@ -391,138 +311,20 @@ export default function Page() {
                     layout="vertical"
                     autoComplete="off"
                 >
-                    {/* INPUT MỒI CHỐNG AUTOFILL */}
-                    <input
-                        type="text"
-                        name="fake-username"
-                        autoComplete="username"
-                        style={{display: 'none'}}
-                    />
-                    <input
-                        type="password"
-                        name="fake-password"
-                        autoComplete="current-password"
-                        style={{display: 'none'}}
-                    />
 
                     <Form.Item
-                        label="Tên học sinh"
-                        name="hoTen"
-                        rules={[{required: true, message: 'Tên học sinh là bắt buộc'}]}
+                        label="Tiêu đề"
+                        name="tieuDe"
+                        rules={[{required: true, message: 'Tiêu đề là bắt buộc'}]}
                     >
                         <Input autoComplete="off"/>
                     </Form.Item>
 
                     <Form.Item
-                        label="Tên đăng nhập"
-                        name="username"
-                        rules={[{required: true, message: 'Vui lòng nhập tên đăng nhập'}]}
+                        label="Nội dung"
+                        name="noiDung"
                     >
-                        <Input
-                            autoComplete="new-username"
-                            name="username_fake"
-                        />
-                    </Form.Item>
-
-                    {
-                        editingLop ? <></> : (<Form.Item
-                            label="Mật khẩu"
-                            name="password"
-                            rules={[{required: true, message: 'Vui lòng nhập mật khẩu'}]}
-                        >
-                            <Input.Password
-                                autoComplete="new-password"
-                                name="password_fake"
-                            />
-                        </Form.Item>)
-                    }
-
-
-                    <Form.Item
-                        label="Giới tính"
-                        name="laNam"
-                        rules={[{required: true, message: 'Vui lòng chọn giới tính'}]}
-                    >
-                        <Radio.Group>
-                            <Radio value={true}>Nam</Radio>
-                            <Radio value={false}>Nữ</Radio>
-                        </Radio.Group>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="tinhId"
-                        label="Tỉnh"
-                        rules={[{required: true, message: 'Vui lòng chọn tỉnh/thành phố'}]}
-                    >
-                        <Select
-                            showSearch
-                            onSearch={setSearchTinh}
-                            onPopupScroll={(e) => {
-                                if (
-                                    e.target.scrollTop + e.target.offsetHeight >=
-                                    e.target.scrollHeight - 5
-                                ) {
-                                    setTinhPagi(p => ({...p, page: p.page + 1}));
-                                }
-                            }}
-                            onChange={(val) => {
-                                setTinhId(val);
-                                form.setFieldsValue({xaId: null});
-                            }}
-                            filterOption={false}
-                        >
-                            {dsTinh.map(t => (
-                                <Select.Option key={t.id} value={t.id}>
-                                    {t.ten}
-                                </Select.Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-
-                    <Form.Item
-                        name="xaId"
-                        label="Xã"
-                        rules={[{required: true, message: 'Vui lòng chọn xã/phường'}]}
-                    >
-                        <Select
-                            showSearch
-                            disabled={!tinhId}
-                            onSearch={setSearchXa}
-                            onPopupScroll={(e) => {
-                                if (
-                                    e.target.scrollTop + e.target.offsetHeight >=
-                                    e.target.scrollHeight - 5
-                                ) {
-                                    setXaPagi(p => ({...p, page: p.page + 1}));
-                                }
-                            }}
-                            filterOption={false}
-                        >
-                            {dsXa.map(x => (
-                                <Select.Option key={x.id} value={x.id}>
-                                    {x.ten}
-                                </Select.Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Địa chỉ chi tiết"
-                        name="diaChiChiTiet"
-                    >
-                        <Input autoComplete="off"/>
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Ngày sinh"
-                        name="ngaySinh"
-                    >
-                        <DatePicker
-                            format="DD/MM/YYYY"
-                            placeholder="DD/MM/YYYY"
-                            style={{width: '100%'}}
-                            inputReadOnly={false}
+                        <Input.TextArea
                         />
                     </Form.Item>
                 </Form>
@@ -536,7 +338,7 @@ export default function Page() {
                 open={deleteModalVisible}
                 onOk={async () => {
                     try {
-                        await xoaHocSinh(deletingId);
+                        await xoaThongBao(deletingId);
                         message.success("Xóa thành công");
 
                         if (data.length === 1 && pagination.current > 1)
@@ -556,7 +358,7 @@ export default function Page() {
                     setDeletingId(null);
                 }}
             >
-                Bạn có chắc muốn xóa học sinh này không?
+                Bạn có chắc muốn xóa thông báo này không?
             </Modal>
 
 

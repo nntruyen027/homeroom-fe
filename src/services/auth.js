@@ -127,3 +127,61 @@ export async function capNhatThongTinQuanTri(body) {
     }
 }
 
+export async function capNhatThongTinGiaoVien(body) {
+    try {
+        const res = await axios.put(`${process.env.NEXT_PUBLIC_BE}/giao-vien`, body, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Lỗi khi cập nhật thông tin!")
+    }
+}
+
+export async function capNhatThongTinHocSinh(body) {
+    try {
+        const res = await axios.put(`${process.env.NEXT_PUBLIC_BE}/hoc-sinh`, body, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Lỗi khi cập nhật thông tin!")
+    }
+}
+
+export async function layThongTinCaNhanGiaoVien() {
+    try {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BE}/giao-vien`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+
+            }
+        })
+        return res.data;
+    } catch (error) {
+        throw new Error(error.response.data.message || 'Lỗi lấy tài khoản cá nhân');
+    }
+}
+
+export async function layThongTinCaNhanHocSinh() {
+    try {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_BE}/hoc-sinh`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`,
+
+            }
+        })
+        return res.data;
+    } catch (error) {
+        throw new Error(error.response.data.message || 'Lỗi lấy tài khoản cá nhân');
+    }
+}
+

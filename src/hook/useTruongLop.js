@@ -96,11 +96,18 @@ export function useTruongLopSelect() {
     }, [truongPagi.page]);
 
     useEffect(() => {
-        if (!truongId) return;
+        // 🔴 KHI CLEAR TRƯỜNG
+        if (!truongId) {
+            setDsLop([]);
+            setLopPagi(p => ({...p, page: 1, total: 0}));
+            return;
+        }
 
+        // 🟢 KHI CÓ TRƯỜNG
         setDsLop([]);
         setLopPagi(p => ({...p, page: 1}));
         fetchLop(true);
+
     }, [truongId, debouncedLop]);
 
     // 🔹 scroll xã

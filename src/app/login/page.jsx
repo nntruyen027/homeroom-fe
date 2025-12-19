@@ -31,9 +31,9 @@ export default function LoginPage() {
         try {
             const {token, user} = await login(formLogin.getFieldValue()?.username, formLogin.getFieldValue()?.password);
             api.success("Đăng nhập thành công");
-            if (user.roles?.includes('TEACHER')) router.push("/giao-vien");
+            if (user.roles?.includes('TEACHER')) router.push("/giao-vien/dashboard");
             else if (user.roles?.includes('ADMIN')) router.push("/quan-tri-vien/dashboard");
-            else router.push("/hoc-sinh");
+            else router.push("/hoc-sinh/dashboard");
         } catch (e) {
             api.error(e.message);
         }
