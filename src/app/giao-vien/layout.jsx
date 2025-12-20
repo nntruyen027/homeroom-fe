@@ -3,12 +3,14 @@
 import {Avatar, Button, Dropdown, Layout, Menu, theme, Typography} from 'antd';
 import {
     BarChartOutlined,
+    ClockCircleOutlined,
     LogoutOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     SafetyOutlined,
-    TableOutlined,
-    UserOutlined
+    SnippetsOutlined,
+    UserOutlined,
+    WechatOutlined
 } from '@ant-design/icons';
 import {useCallback, useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
@@ -24,6 +26,36 @@ export default function RootLayout({children}) {
 
     const [collapsed, setCollapsed] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
+
+    const adminMenuItems = [
+        {key: '/giao-vien/dashboard', label: 'Dashboard', icon: <BarChartOutlined/>},
+
+        {
+            key: 'chu-nhiem',
+            label: 'Chủ nhiệm',
+            icon: <SnippetsOutlined/>,
+            children: [
+                {key: '/giao-vien/lop', label: 'Lớp'},
+                {key: '/giao-vien/hoc-sinh', label: 'Học sinh'},
+            ],
+        },
+        {
+            key: 'hoat-dong',
+            label: 'Hoạt động',
+            icon: <ClockCircleOutlined/>,
+            children: [
+                {key: '/giao-vien/hoat-dong-huong-nghiep', label: 'Hướng nghiệp'},
+            ],
+        },
+        {
+            key: 'lien-he',
+            label: 'Liên hệ',
+            icon: <WechatOutlined/>,
+            children: [
+                {key: '/giao-vien/thong-bao', label: 'Thông báo'},
+            ],
+        }
+    ]
 
     /* ================= FETCH + MERGE CHUẨN ================= */
     const loadUserInfo = useCallback(async () => {
@@ -98,11 +130,7 @@ export default function RootLayout({children}) {
 
                 <Menu
                     mode="inline"
-                    items={[
-                        {key: '/giao-vien/dashboard', label: 'Dashboard', icon: <BarChartOutlined/>},
-                        {key: '/giao-vien/lop', label: 'Lớp', icon: <TableOutlined/>},
-                        {key: '/giao-vien/hoc-sinh', label: 'Học sinh', icon: <UserOutlined/>},
-                    ]}
+                    items={adminMenuItems}
                     onClick={({key}) => router.push(key)}
                 />
             </Sider>

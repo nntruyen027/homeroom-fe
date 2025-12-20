@@ -270,6 +270,14 @@ export default function DoiThongTinModal({open, onClose}) {
                             </Form.Item>
                         </Col>
                     )}
+                    {(isTeacher || isStudent) && (
+                        <Col span={24}>
+                            <Form.Item label="Địa chỉ chi tiêt" name="diaChiChiTiet">
+                                <Input/>
+                            </Form.Item>
+                        </Col>
+                    )}
+
                     {isStudent && (
                         <Col span={12}>
                             <Form.Item label="Môn học yêu thích" name="monHocYeuThich" rules={[{required: true}]}>

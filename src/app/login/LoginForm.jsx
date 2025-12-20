@@ -18,12 +18,26 @@ export default function LoginForm({form, onLogin, onSwitch}) {
             <Typography.Title level={2} style={{textAlign: 'center'}}>Đăng nhập</Typography.Title>
 
             <Form onFinish={onLogin} form={form} layout="vertical" size="middle" autoComplete="off">
+                <input
+                    type="text"
+                    name="fake-username"
+                    autoComplete="username"
+                    style={{display: 'none'}}
+                />
+                <input
+                    type="password"
+                    name="fake-password"
+                    autoComplete="current-password"
+                    style={{display: 'none'}}
+                />
+
                 <Form.Item
                     label="Tên tài khoản"
                     name="username"
                     rules={[{required: true, message: 'Vui lòng nhập tên tài khoản!'}]}
                 >
-                    <Input/>
+                    <Input autoComplete="new-username"
+                           name="fake-username"/>
                 </Form.Item>
 
                 <Form.Item
@@ -31,7 +45,8 @@ export default function LoginForm({form, onLogin, onSwitch}) {
                     name="password"
                     rules={[{required: true, message: 'Vui lòng nhập mật khẩu!'}]}
                 >
-                    <Input.Password/>
+                    <Input.Password autoComplete="current-password"
+                                    name="fake-password"/>
                 </Form.Item>
 
                 <Button type="primary" block htmlType={'submit'}>

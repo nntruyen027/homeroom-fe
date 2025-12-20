@@ -1,40 +1,28 @@
 'use client';
 
 import {useEffect, useState} from "react";
-import {App, Button, Card, Input, Rate, Spin, Tag, Timeline} from "antd";
-import {layDsLogHuongNghiep, nhanXetLog} from "@/services/giao-vien/log-huong-nghiep";
+import {App, Card, Input, Rate, Spin, Timeline} from "antd";
+import {layDsLogHuongNghiep} from "@/services/hoc-sinh/log-huong-nghiep";
 
 const {TextArea} = Input;
 
-export default function HuongNghiepLogTab({hocSinhId}) {
+export default function HuongNghiepLogTab() {
     const {message} = App.useApp();
 
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState([]);
 
-    // nhận xét theo từng hoạt động
-    const [nhanXetMap, setNhanXetMap] = useState({});
-
     /* ================= FETCH ALL LOG ================= */
     const fetchData = async () => {
-        if (!hocSinhId) return;
-
         setLoading(true);
         try {
             const res = await layDsLogHuongNghiep(
-                hocSinhId,
                 {page: 1, limit: 100}
             );
 
             const data = res.data || [];
             setLogs(data);
 
-            // init nhận xét
-            const init = {};
-            data.forEach(item => {
-                init[item.idHoatDong] = item.nhanXet || "";
-            });
-            setNhanXetMap(init);
 
         } catch (e) {
             message.error("Không lấy được nhật ký hướng nghiệp");
@@ -44,22 +32,8 @@ export default function HuongNghiepLogTab({hocSinhId}) {
     };
 
     useEffect(() => {
-        fetchData();
-    }, [hocSinhId]);
-
-    /* ================= SUBMIT NHẬN XÉT ================= */
-    const handleNhanXet = async (item) => {
-        try {
-            await nhanXetLog(
-                hocSinhId,
-                item.idHoatDong,
-                {nhanXet: nhanXetMap[item.idHoatDong]}
-            );
-            message.success("Đã lưu nhận xét");
-        } catch {
-            message.error("Lưu nhận xét thất bại");
-        }
-    };
+        fetchData()
+    }, [])
 
     if (loading) return <Spin/>;
 
@@ -67,23 +41,14 @@ export default function HuongNghiepLogTab({hocSinhId}) {
     return (
         <Timeline mode="alternate">
             {logs.map(item => {
-                const daNhanXet = !!item.nhanXet;
 
                 return (
                     <Timeline.Item
                         key={item.idHoatDong}
-                        color={daNhanXet ? "green" : "blue"}
                         label={item.thoiGian || item.tenHoatDong}
                     >
                         <Card size="small">
-                            <div style={{marginBottom: 8}}>
-                                <b>{item.tenHoatDong}</b>{" "}
-                                {daNhanXet
-                                    ? <Tag color="green">Đã nhận xét</Tag>
-                                    : <Tag color="orange">Chưa nhận xét</Tag>
-                                }
-                            </div>
-
+                            
                             <p><b>Nghề nghiệp quan tâm:</b> {item.nnQuanTam}</p>
                             <p><b>Kỹ năng hạn chế:</b> {item.kyNangHanChe}</p>
 
@@ -94,26 +59,7 @@ export default function HuongNghiepLogTab({hocSinhId}) {
 
                             <p><b>Cần cải thiện:</b> {item.caiThien}</p>
 
-                            <TextArea
-                                rows={3}
-                                placeholder="Nhập nhận xét của giáo viên"
-                                value={nhanXetMap[item.idHoatDong]}
-                                onChange={e =>
-                                    setNhanXetMap(prev => ({
-                                        ...prev,
-                                        [item.idHoatDong]: e.target.value
-                                    }))
-                                }
-                            />
-
-                            <div style={{textAlign: "right", marginTop: 8}}>
-                                <Button
-                                    type="primary"
-                                    onClick={() => handleNhanXet(item)}
-                                >
-                                    Lưu nhận xét
-                                </Button>
-                            </div>
+                            <p><b>Nhận xét của giáo viên:</b> {item.nhanXet}</p>
                         </Card>
                     </Timeline.Item>
                 );

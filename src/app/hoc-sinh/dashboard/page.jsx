@@ -5,8 +5,8 @@ import {useParams} from "next/navigation";
 import {App, Avatar, Card, Col, Descriptions, Row, Spin, Tabs} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
-import HuongNghiepLogTab from "@/app/giao-vien/hoc-sinh/[id]/HuongNghiepLogTab";
 import {layThongTinCaNhanHocSinh} from "@/services/auth";
+import HuongNghiepLogTab from "@/app/hoc-sinh/dashboard/HuongNghiepLogTab";
 
 export default function HocSinhDetailPage() {
     const {id} = useParams();
@@ -55,7 +55,6 @@ export default function HocSinhDetailPage() {
                 <>
 
                     <HuongNghiepLogTab
-                        hocSinhId={id}
                     />
                 </>
             )
