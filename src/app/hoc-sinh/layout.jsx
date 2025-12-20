@@ -1,7 +1,12 @@
 'use client';
 
 import {Layout} from "antd";
-import AppHeader from "@/app/hoc-sinh/AppHeader";
+import dynamic from "next/dynamic";
+
+const AppHeader = dynamic(
+    () => import("@/app/hoc-sinh/AppHeader"),
+    {ssr: false} // 🔥 QUAN TRỌNG
+);
 
 const {Header, Content} = Layout;
 

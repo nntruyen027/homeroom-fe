@@ -1,40 +1,53 @@
-import axios from "axios";
+import api from "@/services/api";
 
-const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/hoc-sinh/huong-nghiep/log',
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("jwtToken")}`,
-    }
-});
-
-
+/**
+ * Lấy danh sách log hướng nghiệp
+ */
 export async function layDsLogHuongNghiep({page, limit}) {
     try {
-        const res = await api.get(``, {
-            params: {page, limit}
-        })
+        const res = await api.get(
+            "/hoc-sinh/huong-nghiep/log",
+            {
+                params: {page, limit},
+            }
+        );
         return res.data;
     } catch (e) {
-        throw new Error(e.response?.data?.message);
+        throw new Error(
+            e?.response?.data?.message || "Không lấy được danh sách log"
+        );
     }
 }
 
+/**
+ * Lấy log theo hoạt động
+ */
 export async function layLogHuongNghiepTheoHd(hdId) {
     try {
-        const res = await api.get(`hoat-dong/${hdId}`,)
+        const res = await api.get(
+            `/hoc-sinh/huong-nghiep/log/hoat-dong/${hdId}`
+        );
         return res.data;
     } catch (e) {
-        throw new Error(e.response?.data?.message);
+        throw new Error(
+            e?.response?.data?.message || "Không lấy được log theo hoạt động"
+        );
     }
 }
 
-
+/**
+ * Viết log hướng nghiệp
+ */
 export async function vietLog(hdId, body) {
     try {
-        const res = await api.post(`${hdId}`, body)
+        const res = await api.post(
+            `/hoc-sinh/huong-nghiep/log/${hdId}`,
+            body
+        );
         return res.data;
     } catch (e) {
-        throw new Error(e.response?.data?.message);
+        throw new Error(
+            e?.response?.data?.message || "Không thể viết log"
+        );
     }
 }
