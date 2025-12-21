@@ -169,11 +169,7 @@ export default function Page() {
     useEffect(() => {
         fetchData(1, pagination.pageSize, debouncedSearch);
     }, [debouncedSearch]);
-
-    useEffect(() => {
-        console.log(dsTruong);
-    }, [dsTruong]);
-
+    
 
     /* --------------------------------------------
      * 9. UI RENDER

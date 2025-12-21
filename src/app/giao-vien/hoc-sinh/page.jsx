@@ -17,6 +17,7 @@ import {
 import {useTinhXaSelect} from "@/hook/useTinhXa";
 import dayjs from 'dayjs';
 import {useRouter} from "next/navigation";
+import useTeacherRealtime from "@/hook/useTeacherRealtime";
 
 
 export default function Page() {
@@ -39,7 +40,7 @@ export default function Page() {
 
     const [searchText, setSearchText] = useState("");
     const [importing, setImporting] = useState(false);
-
+    const [onlineUsers, setOnlineUsers] = useState([]);
     const debouncedSearch = useDebounce(searchText, 400);
 
     // -----------------------------
@@ -73,7 +74,11 @@ export default function Page() {
         xaPagi
     } = useTinhXaSelect()
 
-
+    useTeacherRealtime(lopId, (lopId, type, payload) => {
+        if (type === "list") {
+            setOnlineUsers(payload?.map(hs => hs?.userId));
+        }
+    });
     /* --------------------------------------------
      * 2. REFS
      * -------------------------------------------- */
@@ -96,6 +101,27 @@ export default function Page() {
         {title: "Tên đăng nhập", dataIndex: "username", key: "username"},
         {title: "Giới tính", dataIndex: "laNam", width: 100, key: "laNam", render: (obj) => obj ? 'Nam' : 'Nữ'},
         {title: "Môn học yêu thích", dataIndex: "monHocYeuThich", key: "monHocYeuThich"},
+        {
+            title: "Hoạt động",
+            key: "hoatDong",
+            width: 150,
+            align: "center",
+            render: (_, record) => {
+
+                const isOnline = onlineUsers.includes(record.id);
+                return (
+                    <span
+                        style={{
+                            display: "inline-block",
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            backgroundColor: isOnline ? "green" : "gray",
+                        }}
+                    />
+                );
+            }
+        },
         {
             title: "Thao tác",
             key: "thaoTac",

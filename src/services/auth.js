@@ -76,6 +76,11 @@ export async function capNhatThongTinGiaoVien(body) {
     return res.data;
 }
 
+export async function layStatisticGiaoVien() {
+    const res = await api.get("/giao-vien/statistic");
+    return res.data;
+}
+
 export async function capNhatThongTinHocSinh(body) {
     const res = await api.put("/hoc-sinh", body);
     return res.data;

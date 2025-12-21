@@ -145,11 +145,16 @@ export default function RootLayout({children}) {
                         alignItems: "center",
                     }}
                 >
-                    <Button
-                        type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
-                        onClick={() => setCollapsed(!collapsed)}
-                    />
+                    <div className={'p-0'}>
+                        <Button
+
+                            type="text"
+                            icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
+                            onClick={() => setCollapsed(!collapsed)}
+                        />
+                        <Typography.Text>Giáo viên</Typography.Text>
+                    </div>
+
 
                     <Dropdown menu={{items: userMenuItems}} placement="bottomRight">
                         <div className="flex items-center gap-2 cursor-pointer">
