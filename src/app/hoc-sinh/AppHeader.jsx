@@ -75,6 +75,7 @@ export default function AppHeader() {
         setPage(nextPage);
         loadThongBao(nextPage, true);
     };
+
     const handleClickThongBao = async tb => {
         setSelectedThongBao(tb);
         setOpenModal(true);
@@ -92,6 +93,7 @@ export default function AppHeader() {
 
     if (!userInfo) return null;
 
+    // ================= MENU ITEMS =================
     const menuItems = [
         {key: "/hoc-sinh/dashboard", label: "Trang chủ"},
         {key: "/hoc-sinh/huong-nghiep", label: "Hướng nghiệp"},
@@ -108,6 +110,8 @@ export default function AppHeader() {
             }
         },
     ];
+
+    const mobileMenuItems = menuItems.map(i => ({...i, onClick: () => router.push(i.key)}));
 
     const thongBaoMenuItems = [
         {
@@ -176,7 +180,7 @@ export default function AppHeader() {
                         <Menu mode="horizontal" selectedKeys={[pathname]} items={menuItems}
                               onClick={({key}) => router.push(key)} style={{flex: 1}}/>
                     ) : (
-                        <Dropdown menu={{items: menuItems}} trigger={["click"]} placement="bottomLeft">
+                        <Dropdown menu={{items: mobileMenuItems}} trigger={["click"]} placement="bottomLeft">
                             <Button icon={<MenuOutlined/>} type="text"/>
                         </Dropdown>
                     )}
