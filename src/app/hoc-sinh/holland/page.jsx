@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Col, Modal, Progress, Row} from "antd";
+import {Button, Card, Col, Modal, Progress, Row, Typography} from "antd";
 import {lamBaiHolland} from "@/services/hoc-sinh/holland";
 import questions from "./cau-hoi.json";
 import {useRouter} from "next/navigation";
 
-export default function Page() {
+const {Title, Text} = Typography;
+
+export default function HollandTestPage() {
     const [answers, setAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 phút
     const [ketQua, setKetQua] = useState(null);
@@ -17,17 +19,16 @@ export default function Page() {
 
     const questionRefs = useRef({});
     const router = useRouter();
-
     const timerRef = useRef(null);
 
-// Đồng hồ đếm ngược
+    // Đồng hồ đếm ngược
     useEffect(() => {
-        if (!started || ketQua) return; // nếu chưa bắt đầu hoặc đã có kết quả thì không chạy
+        if (!started || ketQua) return;
         timerRef.current = setInterval(() => {
             setTimeLeft((t) => {
                 if (t <= 1) {
                     clearInterval(timerRef.current);
-                    handleSubmit(); // tự nộp bài khi hết thời gian
+                    handleSubmit();
                     return 0;
                 }
                 return t - 1;
@@ -35,7 +36,6 @@ export default function Page() {
         }, 1000);
         return () => clearInterval(timerRef.current);
     }, [started, ketQua]);
-
 
     const handleSelect = (qid, val) => {
         setAnswers((prev) => ({...prev, [qid]: val}));
@@ -96,17 +96,12 @@ export default function Page() {
                 open={showStartModal}
                 title="Bắt đầu bài Holland"
                 footer={[
-
-                    <Button key="start" type="primary" onClick={startTest}>
-                        Bắt đầu
-                    </Button>,
-                    <Button key="start" onClick={() => router.back()}>
-                        Trở lại
-                    </Button>
+                    <Button key="start" type="primary" onClick={startTest}>Bắt đầu</Button>,
+                    <Button key="back" onClick={() => router.back()}>Trở lại</Button>
                 ]}
                 closable={false}
             >
-                <p>Bạn có 60 phút để làm bài. </p>
+                <p>Bạn có 60 phút để hoàn thành bài trắc nghiệm.</p>
             </Modal>
 
             {/* Modal kết quả */}
@@ -114,113 +109,58 @@ export default function Page() {
                 open={showResultModal}
                 title="Kết quả Holland"
                 footer={[
-                    <Button key="restart" type="primary" onClick={restartTest}>
-                        Bắt đầu lại
-                    </Button>,
-                    <Button key="close" onClick={() => setShowResultModal(false)}>
-                        Đóng
-                    </Button>
+                    <Button key="restart" type="primary" onClick={restartTest}>Bắt đầu lại</Button>,
+                    <Button key="close" onClick={() => setShowResultModal(false)}>Đóng</Button>
                 ]}
                 onCancel={() => setShowResultModal(false)}
+                width={600}
             >
                 {ketQua ? (
-                    <>
-                        <p><strong>Học sinh:</strong> {ketQua.hoTen}</p>
-                        <p><strong>Mã Holland:</strong> {ketQua.maHolland}</p>
-                        <p><strong>Thời gian làm bài:</strong> {ketQua.thoiGianLam} giây</p>
-                        <div style={{display: "flex", flexDirection: "column", gap: 8}}>
-                            {['R', 'I', 'A', 'S', 'E', 'C'].map((type) => (
-                                <div key={type}>
-                                    <span style={{width: 40, display: 'inline-block'}}>{type}</span>
-                                    <Progress
-                                        percent={Math.min(ketQua[`diem${type}`] * 20, 100)}
-                                        status="active"
-                                        strokeColor="#1890ff"
-                                        showInfo
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    <p>Đang tải kết quả...</p>
-                )}
+                    <div style={{display: "flex", flexDirection: "column", gap: 16}}>
+                        <Text><b>Học sinh:</b> {ketQua.hoTen}</Text>
+                        <Text><b>Mã Holland:</b> {ketQua.maHolland}</Text>
+                        <Text><b>Thời gian làm bài:</b> {ketQua.thoiGianLam} giây</Text>
+
+                        {['R', 'I', 'A', 'S', 'E', 'C'].map((type) => (
+                            <div key={type}>
+                                <Text strong>{type}</Text>
+                                <Progress
+                                    percent={Math.min(ketQua[`diem${type}`] * 20, 100)}
+                                    status="active"
+                                    strokeColor="#1890ff"
+                                    showInfo
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : <p>Đang tải kết quả...</p>}
             </Modal>
 
-
             <Row gutter={16}>
-                <Col span={18}>
-                    {questions.map((q, index) => (
-                        <div
-                            key={q.id}
-                            ref={(el) => (questionRefs.current[q.id] = el)}
-                            style={{
-                                marginBottom: 16,
-                                padding: 12,
-                                border: "1px solid #ccc",
-                                borderRadius: 4,
-                                backgroundColor: answers[q.id] !== undefined ? "#f0fff0" : "#fff",
-                            }}
-                        >
-                            <p style={{fontWeight: 500}}>{index + 1}. {q.text}</p>
-                            <div style={{display: "flex", gap: 8}}>
-                                {[0, 1, 2, 3, 4, 5].map((val) => (
-                                    <Button
-                                        key={val}
-                                        type={answers[q.id] === val ? "primary" : "default"}
-                                        onClick={() => handleSelect(q.id, val)}
-                                    >
-                                        {val}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-
-                    <Button type="primary" onClick={handleSubmit} loading={loading}>
-                        Hoàn thành bài
-                    </Button>
-                </Col>
-
-                <Col span={6}>
-                    <div
-                        style={{
-                            position: "sticky",
-                            top: 90,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 16,
-                        }}
-                    >
-                        <div
-                            style={{
-                                padding: 12,
-                                border: "1px solid #ccc",
-                                borderRadius: 4,
-                                textAlign: "center",
-                            }}
-                        >
-                            <h4>Thời gian còn lại</h4>
-                            <div style={{fontSize: 24, fontWeight: "bold"}}>{formatTime(timeLeft)}</div>
-                        </div>
+                {/* Sidebar hiển thị trên mobile */}
+                <Col xs={24} md={6} style={{order: 0}}>
+                    <div style={{
+                        position: "sticky",
+                        left: 0,
+                        top: 100,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                        marginBottom: 16
+                    }}>
+                        <Card style={{textAlign: "center"}}>
+                            <Title level={5}>Thời gian còn lại</Title>
+                            <Text style={{fontSize: 24, fontWeight: "bold"}}>{formatTime(timeLeft)}</Text>
+                        </Card>
 
                         <Progress
-                            percent={100}
-                            strokeColor="#1890ff"
+                            percent={(answeredCount / totalQuestions) * 100}
                             status={answeredCount === totalQuestions ? "success" : "active"}
                             format={() => `${answeredCount} / ${totalQuestions} câu`}
                         />
 
-                        <div
-                            style={{
-                                padding: 12,
-                                border: "1px solid #ccc",
-                                borderRadius: 4,
-                                maxHeight: "60vh",
-                                overflowY: "auto",
-                            }}
-                        >
-                            <h4>Trạng thái câu hỏi</h4>
+                        <Card style={{maxHeight: "60vh", overflowY: "auto"}}>
+                            <Title level={5}>Trạng thái câu hỏi</Title>
                             <div style={{display: "flex", flexWrap: "wrap", gap: 4}}>
                                 {questions.map((q) => (
                                     <div
@@ -241,8 +181,39 @@ export default function Page() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </Card>
                     </div>
+                </Col>
+
+                {/* Câu hỏi */}
+                <Col xs={24} md={18} style={{order: 1}}>
+                    {questions.map((q, index) => (
+                        <Card
+                            key={q.id}
+                            ref={(el) => (questionRefs.current[q.id] = el)}
+                            style={{
+                                marginBottom: 16,
+                                backgroundColor: answers[q.id] !== undefined ? "#f0fff0" : "#fff",
+                            }}
+                        >
+                            <Title level={5}>{index + 1}. {q.text}</Title>
+                            <div style={{display: "flex", gap: 8, flexWrap: "wrap"}}>
+                                {[0, 1, 2, 3, 4, 5].map((val) => (
+                                    <Button
+                                        key={val}
+                                        type={answers[q.id] === val ? "primary" : "default"}
+                                        onClick={() => handleSelect(q.id, val)}
+                                    >
+                                        {val}
+                                    </Button>
+                                ))}
+                            </div>
+                        </Card>
+                    ))}
+
+                    <Button type="primary" onClick={handleSubmit} loading={loading} block>
+                        Hoàn thành bài
+                    </Button>
                 </Col>
             </Row>
         </div>

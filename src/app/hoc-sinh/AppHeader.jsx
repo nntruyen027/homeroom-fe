@@ -1,7 +1,7 @@
 'use client';
 
-import {Avatar, Badge, Dropdown, Menu, Modal, Space} from "antd";
-import {BellOutlined, LogoutOutlined, SafetyOutlined, UserOutlined} from "@ant-design/icons";
+import {Avatar, Badge, Button, Dropdown, Grid, Menu, Modal, Space} from "antd";
+import {BellOutlined, LogoutOutlined, MenuOutlined, SafetyOutlined, UserOutlined} from "@ant-design/icons";
 import {usePathname, useRouter} from "next/navigation";
 import {useModal} from "@/store/modal";
 import {useEffect, useState} from "react";
@@ -12,7 +12,8 @@ import useHocSinhOnline from "@/hook/useHocSinhOnline";
 export default function AppHeader() {
     const router = useRouter();
     const pathname = usePathname();
-    const {SetIsUpdatePassOpen, setIsEditOpen, isEditOpen} = useModal();
+    const {SetIsUpdatePassOpen, setIsEditOpen} = useModal();
+    const screens = Grid.useBreakpoint();
 
     const [userInfo, setUserInfo] = useState(null);
     const [thongBao, setThongBao] = useState([]);
@@ -22,24 +23,19 @@ export default function AppHeader() {
     const PAGE_SIZE = 11;
     const [openModal, setOpenModal] = useState(false);
     const [selectedThongBao, setSelectedThongBao] = useState(null);
-    
 
     // ================= LOAD STUDENT =================
     useEffect(() => {
         let ignore = false;
-
         const loadStudent = async () => {
             try {
                 const localUser = JSON.parse(localStorage.getItem("userInfo") || "{}");
-
                 if (!localUser?.roles?.includes("STUDENT")) {
                     router.replace("/login");
                     return;
                 }
-
                 const student = await layThongTinCaNhanHocSinh();
                 if (ignore) return;
-
                 const merged = {...localUser, ...student};
                 setUserInfo(merged);
                 localStorage.setItem("userInfo", JSON.stringify(merged));
@@ -47,30 +43,23 @@ export default function AppHeader() {
                 router.replace("/login");
             }
         };
-
         loadStudent();
         return () => {
             ignore = true;
         };
-    }, [router, isEditOpen]);
-
+    }, [setIsEditOpen]);
 
     useHocSinhOnline();
 
     // ================= LOAD THÔNG BÁO =================
     const loadThongBao = async (pageLoad = 1, append = false) => {
         if (!userInfo) return;
-
         const res = await layDsThongBao({page: pageLoad, limit: PAGE_SIZE});
         const data = res?.data || [];
-
         setThongBao(prev => (append ? [...prev, ...data] : data));
         setHasMore(data.length === PAGE_SIZE);
-
         const allData = append ? [...thongBao, ...data] : data;
-        const unread = allData.filter(
-            tb => !tb.ds_user_da_xem?.some(u => u.id === userInfo.id)
-        );
+        const unread = allData.filter(tb => !tb.ds_user_da_xem?.some(u => u.id === userInfo.id));
         setCount(unread.length);
     };
 
@@ -86,22 +75,17 @@ export default function AppHeader() {
         setPage(nextPage);
         loadThongBao(nextPage, true);
     };
-
-    const handleClickThongBao = async (tb) => {
+    const handleClickThongBao = async tb => {
         setSelectedThongBao(tb);
         setOpenModal(true);
-
         const daXem = tb.ds_user_da_xem?.some(u => u.id === userInfo.id);
         if (!daXem) {
             await xemThongBao(tb.thongBaoId);
-
-            setThongBao(prev =>
-                prev.map(item =>
-                    item.thongBaoId === tb.thongBaoId
-                        ? {...item, ds_user_da_xem: [...(item.ds_user_da_xem || []), {id: userInfo.id}]}
-                        : item
-                )
-            );
+            setThongBao(prev => prev.map(item =>
+                item.thongBaoId === tb.thongBaoId
+                    ? {...item, ds_user_da_xem: [...(item.ds_user_da_xem || []), {id: userInfo.id}]}
+                    : item
+            ));
             setCount(c => Math.max(c - 1, 0));
         }
     };
@@ -127,9 +111,8 @@ export default function AppHeader() {
 
     const thongBaoMenuItems = [
         {
-            key: "list",
-            label: (
-                <div style={{width: 340}}>
+            key: "list", label: (
+                <div style={{width: screens.xs ? 280 : 340}}>
                     <div style={{maxHeight: 360, overflowY: "auto"}}>
                         {thongBao.map(tb => {
                             const daXem = tb.ds_user_da_xem?.some(u => u.id === userInfo.id);
@@ -143,10 +126,9 @@ export default function AppHeader() {
                                          borderBottom: "1px solid #f0f0f0"
                                      }}>
                                     <div>{tb.tieuDe}</div>
-                                    <div style={{
-                                        fontSize: 12,
-                                        color: "#888"
-                                    }}>{new Date(tb.thoiGianTao).toLocaleString()}</div>
+                                    <div style={{fontSize: 12, color: "#888"}}>
+                                        {new Date(tb.thoiGianTao).toLocaleString()}
+                                    </div>
                                     <div>{tb.noiDung.length > 40 ? tb.noiDung.slice(0, 40) + "…" : tb.noiDung}</div>
                                 </div>
                             );
@@ -169,7 +151,7 @@ export default function AppHeader() {
                         </div>
                     )}
                 </div>
-            ),
+            )
         },
     ];
 
@@ -179,28 +161,39 @@ export default function AppHeader() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "0 16px",
-                height: 64
+                padding: screens.xs ? "0 12px" : "0 16px",
+                height: 64,
+                gap: screens.xs ? 8 : 20
             }}>
-                <div style={{display: "flex", alignItems: "center", gap: 32, flex: 1}}>
-                    <div style={{fontWeight: 600, fontSize: 18, cursor: "pointer"}}
-                         onClick={() => router.push("/hoc-sinh")}>🎓 Homeroom
+                {/* Logo + Menu */}
+                <div style={{display: "flex", alignItems: "center", gap: screens.xs ? 12 : 32, flex: 1}}>
+                    <div style={{fontWeight: 600, fontSize: screens.xs ? 16 : 18, cursor: "pointer"}}
+                         onClick={() => router.push("/hoc-sinh")}>
+                        🎓 Homeroom
                     </div>
-                    <Menu mode="horizontal" selectedKeys={[pathname]} items={menuItems}
-                          onClick={({key}) => router.push(key)} style={{flex: 1}}/>
+
+                    {!screens.xs ? (
+                        <Menu mode="horizontal" selectedKeys={[pathname]} items={menuItems}
+                              onClick={({key}) => router.push(key)} style={{flex: 1}}/>
+                    ) : (
+                        <Dropdown menu={{items: menuItems}} trigger={["click"]} placement="bottomLeft">
+                            <Button icon={<MenuOutlined/>} type="text"/>
+                        </Dropdown>
+                    )}
                 </div>
 
-                <div style={{display: "flex", gap: 20, alignItems: "center"}}>
+                {/* Notification + User */}
+                <div style={{display: "flex", gap: screens.xs ? 12 : 20, alignItems: "center"}}>
                     <Dropdown trigger={["click"]} placement="bottomRight" menu={{items: thongBaoMenuItems}}>
                         <Badge count={count} overflowCount={10} size="small">
-                            <BellOutlined style={{fontSize: 20, cursor: "pointer"}}/>
+                            <BellOutlined style={{fontSize: screens.xs ? 18 : 20, cursor: "pointer"}}/>
                         </Badge>
                     </Dropdown>
 
                     <Dropdown menu={{items: userMenuItems}} trigger={["click"]} placement="bottomRight">
                         <Space style={{cursor: "pointer"}}>
-                            <Avatar src={userInfo.avatar} icon={<UserOutlined/>}/>
-                            <span>{userInfo.hoTen || "Học sinh"}</span>
+                            <Avatar size={screens.xs ? 28 : 32} src={userInfo.avatar} icon={<UserOutlined/>}/>
+                            {!screens.xs && <span>{userInfo.hoTen || "Học sinh"}</span>}
                         </Space>
                     </Dropdown>
                 </div>

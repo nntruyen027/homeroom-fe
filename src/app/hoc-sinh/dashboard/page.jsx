@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from "react";
 import {useParams} from "next/navigation";
-import {App, Avatar, Card, Col, Descriptions, Row, Spin, Tabs} from "antd";
+import {App, Avatar, Card, Col, Descriptions, Grid, Row, Spin, Tabs} from "antd";
 import {UserOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import {layThongTinCaNhanHocSinh} from "@/services/auth";
@@ -12,17 +12,15 @@ import HollandTab from "@/app/hoc-sinh/dashboard/HollandTab";
 export default function HocSinhDetailPage() {
     const {id} = useParams();
     const {message} = App.useApp();
+    const screens = Grid.useBreakpoint();
 
     const [loading, setLoading] = useState(true);
     const [hocSinh, setHocSinh] = useState(null);
 
-
     /* ================= FETCH HỌC SINH ================= */
     useEffect(() => {
-
         const fetchHocSinh = async () => {
             setLoading(true);
-
             try {
                 const res = await layThongTinCaNhanHocSinh();
                 setHocSinh(res);
@@ -32,7 +30,6 @@ export default function HocSinhDetailPage() {
                 setLoading(false);
             }
         };
-
         fetchHocSinh();
     }, [id]);
 
@@ -52,50 +49,37 @@ export default function HocSinhDetailPage() {
         {
             key: 'nhat-ky',
             label: 'Nhật ký hướng nghiệp',
-            children: (
-                <>
-
-                    <HuongNghiepLogTab
-                    />
-                </>
-            )
+            children: <HuongNghiepLogTab/>
         },
         {
-
             key: 'holland',
             label: 'Nhật ký làm bài Holland',
-            children: (
-                <>
-                    <HollandTab/>
-                </>
-            )
+            children: <HollandTab/>
         }
     ];
 
     return (
-        <Row gutter={16}>
+        <Row gutter={[16, 16]}>
             {/* ================= RIGHT: THÔNG TIN CƠ BẢN ================= */}
-            <Col span={6}>
+            <Col xs={24} sm={24} md={8} lg={6}>
                 <Card>
                     <div style={{textAlign: "center", marginBottom: 16}}>
                         <Avatar
-                            size={100}
+                            size={screens.xs ? 80 : 100}
                             src={hocSinh.avatar}
                             icon={<UserOutlined/>}
                         />
-                        <h3 style={{marginTop: 12}}>
+                        <h3 style={{marginTop: 12, fontSize: screens.xs ? 16 : 18}}>
                             {hocSinh.hoTen}
                         </h3>
-                        <div>
+                        <div style={{fontSize: screens.xs ? 12 : 14, color: "#555"}}>
                             {hocSinh?.lop?.ten} – {hocSinh?.lop?.truong?.ten}
                         </div>
                     </div>
 
                     <Descriptions column={1} size="small" bordered>
                         <Descriptions.Item label="Ngày sinh">
-                            {hocSinh.ngaySinh
-                                ? dayjs(hocSinh.ngaySinh).format("DD/MM/YYYY")
-                                : "--"}
+                            {hocSinh.ngaySinh ? dayjs(hocSinh.ngaySinh).format("DD/MM/YYYY") : "--"}
                         </Descriptions.Item>
                         <Descriptions.Item label="Giới tính">
                             {hocSinh.laNam ? "Nam" : "Nữ"}
@@ -126,9 +110,14 @@ export default function HocSinhDetailPage() {
             </Col>
 
             {/* ================= LEFT: NỘI DUNG CHÍNH ================= */}
-            <Col span={16}>
+            <Col xs={24} sm={24} md={16} lg={18}>
                 <Card>
-                    <Tabs defaultActiveKey="nhat-ky" items={tabItems}/>
+                    <Tabs
+                        defaultActiveKey="nhat-ky"
+                        items={tabItems}
+                        tabPosition={screens.xs ? "top" : "left"}
+                        style={{minHeight: 500}}
+                    />
                 </Card>
             </Col>
         </Row>

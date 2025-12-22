@@ -1,13 +1,12 @@
 'use client';
 
 import {useEffect, useState} from "react";
-import {App, Card, Input, Rate, Spin, Timeline} from "antd";
+import {App, Card, Grid, Rate, Spin, Timeline} from "antd";
 import {layDsLogHuongNghiep} from "@/services/hoc-sinh/log-huong-nghiep";
-
-const {TextArea} = Input;
 
 export default function HuongNghiepLogTab() {
     const {message} = App.useApp();
+    const screens = Grid.useBreakpoint();
 
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState([]);
@@ -16,14 +15,9 @@ export default function HuongNghiepLogTab() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await layDsLogHuongNghiep(
-                {page: 1, limit: 100}
-            );
-
+            const res = await layDsLogHuongNghiep({page: 1, limit: 100});
             const data = res.data || [];
             setLogs(data);
-
-
         } catch (e) {
             message.error("Không lấy được nhật ký hướng nghiệp");
         } finally {
@@ -33,37 +27,36 @@ export default function HuongNghiepLogTab() {
 
     useEffect(() => {
         fetchData()
-    }, [])
+    }, []);
 
-    if (loading) return <Spin/>;
-
+    if (loading) return (
+        <div style={{textAlign: 'center', padding: 40}}>
+            <Spin size="large"/>
+        </div>
+    );
 
     return (
-        <Timeline mode="alternate">
-            {logs.map(item => {
-
-                return (
-                    <Timeline.Item
-                        key={item.idHoatDong}
-                        label={item.thoiGian || item.tenHoatDong}
-                    >
-                        <Card size="small">
-                            
-                            <p><b>Nghề nghiệp quan tâm:</b> {item.nnQuanTam}</p>
-                            <p><b>Kỹ năng hạn chế:</b> {item.kyNangHanChe}</p>
-
+        <Timeline mode={screens.xs ? "left" : "alternate"}>
+            {logs.map(item => (
+                <Timeline.Item
+                    key={item.idHoatDong}
+                    label={item.thoiGian || item.tenHoatDong}
+                    style={{paddingBottom: 24}}
+                >
+                    <Card size="small" style={{borderRadius: 8}}>
+                        {item.nnQuanTam && <p><b>Nghề nghiệp quan tâm:</b> {item.nnQuanTam}</p>}
+                        {item.kyNangHanChe && <p><b>Kỹ năng hạn chế:</b> {item.kyNangHanChe}</p>}
+                        {item.mucDoHieuBiet != null && (
                             <p>
                                 <b>Mức độ hiểu biết:</b>{" "}
                                 <Rate disabled value={item.mucDoHieuBiet}/>
                             </p>
-
-                            <p><b>Cần cải thiện:</b> {item.caiThien}</p>
-
-                            <p><b>Nhận xét của giáo viên:</b> {item.nhanXet}</p>
-                        </Card>
-                    </Timeline.Item>
-                );
-            })}
+                        )}
+                        {item.caiThien && <p><b>Cần cải thiện:</b> {item.caiThien}</p>}
+                        {item.nhanXet && <p><b>Nhận xét của giáo viên:</b> {item.nhanXet}</p>}
+                    </Card>
+                </Timeline.Item>
+            ))}
         </Timeline>
     );
 }

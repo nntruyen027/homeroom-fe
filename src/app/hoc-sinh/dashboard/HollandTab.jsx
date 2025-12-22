@@ -1,15 +1,14 @@
-"use client";
+'use client';
 
 import {useEffect, useState} from "react";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {layLichSuLamBai} from "@/services/hoc-sinh/holland";
-import {Card, Col, Divider, Row, Statistic} from "antd";
-import hollandTypes from './y-nghia.json'
-
+import {Card, Col, Divider, Grid, Row, Statistic} from "antd";
+import hollandTypes from './y-nghia.json';
 
 export default function HollandTab() {
     const [data, setData] = useState([]);
-
+    const screens = Grid.useBreakpoint();
 
     useEffect(() => {
         async function fetchData() {
@@ -45,51 +44,64 @@ export default function HollandTab() {
 
     return (
         <div style={{width: "100%"}} className="flex flex-col gap-5">
-            <div className={'text-center'}>
+            {/* ===== Holland Code & Description ===== */}
+            <div className='text-center px-4'>
                 <div
-                    className={'font-extrabold text-8xl mb-4 text-shadow-2xs text-orange-500'}>{data?.[0]?.maHolland}</div>
-                <div className={'w-full px-20 text-center '}>
-                    {data?.[0]?.maHolland.split('').map(key =>
+                    className='font-extrabold mb-4'
+                    style={{fontSize: screens.xs ? 36 : 64, color: "#fa8c16", textShadow: "1px 1px 2px #ccc"}}
+                >
+                    {data?.[0]?.maHolland || "--"}
+                </div>
+                <div className='w-full text-center' style={{padding: screens.xs ? "0 8px" : "0 40px"}}>
+                    {data?.[0]?.maHolland?.split('').map(key =>
                         hollandTypes.find(h => h.key === key)
                     ).map((g, i) => (
-                        <span key={i}>{g.description + " "}</span>
-
+                        <span key={i}
+                              style={{display: "inline-block", margin: "0 4px", fontSize: screens.xs ? 12 : 14}}>
+                            {g?.description}
+                        </span>
                     ))}
                 </div>
             </div>
+
             <Divider/>
-            <Row gutter={16} style={{marginBottom: 24}}>
-                {stats.map((item) => {
-                    console.log(data?.[0]?.[item.key]);
-                    return (
-                        <Col span={4} key={item.key}>
-                            <Card
-                                style={{
-                                    background: item.color,
-                                    textAlign: "center",
-                                    borderRadius: 8,
-                                }}
-                            >
-                                <Statistic
-                                    title={<span
-                                        style={{fontSize: 20, fontWeight: 700, color: "#fff"}}>{item.key}</span>}
-                                    value={data?.[0]?.[item.key] ?? 0}
 
-                                    precision={0}
-                                />
-                            </Card>
-                        </Col>
-                    )
-
-                })}
+            {/* ===== Stats Cards ===== */}
+            <Row gutter={[16, 16]} justify="center">
+                {stats.map((item) => (
+                    <Col
+                        key={item.key}
+                        xs={12} sm={8} md={4}
+                    >
+                        <Card
+                            style={{
+                                background: item.color,
+                                textAlign: "center",
+                                borderRadius: 8
+                            }}
+                        >
+                            <Statistic
+                                title={<span style={{
+                                    fontSize: screens.xs ? 16 : 20,
+                                    fontWeight: 700,
+                                    color: "#fff"
+                                }}>{item.key}</span>}
+                                value={data?.[0]?.[item.key] ?? 0}
+                                precision={0}
+                            />
+                        </Card>
+                    </Col>
+                ))}
             </Row>
+
             <Divider/>
-            {/* Line Chart */}
-            <div style={{width: "100%", height: 400}}>
+
+            {/* ===== Line Chart ===== */}
+            <div style={{width: "100%", height: screens.xs ? 300 : 400}}>
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={data} margin={{top: 20, right: 30, left: 20, bottom: 5}}>
                         <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis dataKey="ngay"/>
+                        <XAxis dataKey="ngay" minTickGap={10}/>
                         <YAxis/>
                         <Tooltip/>
                         <Legend/>
