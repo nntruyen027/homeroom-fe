@@ -7,6 +7,7 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     SafetyOutlined,
+    SettingOutlined,
     TableOutlined,
     UsergroupAddOutlined,
     UserOutlined
@@ -46,6 +47,15 @@ const adminMenuItems = [
             {key: '/quan-tri-vien/xa', label: 'Xã/Phường'},
             {key: '/quan-tri-vien/truong', label: 'Trường'},
             {key: '/quan-tri-vien/lop', label: 'Lớp'},
+            {key: '/quan-tri-vien/bo-mon', label: 'Bộ môn'},
+        ],
+    },
+    {
+        key: 'he-thong',
+        label: 'Quản lý hệ thống',
+        icon: <SettingOutlined/>,
+        children: [
+            {key: '/quan-tri-vien/tham-so', label: 'Tham số'},
         ],
     },
     {
