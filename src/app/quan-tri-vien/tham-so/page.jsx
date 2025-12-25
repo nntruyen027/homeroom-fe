@@ -6,6 +6,7 @@ import {EllipsisOutlined} from "@ant-design/icons";
 import {useDebounce} from "@/hook/data";
 import {layDsCauHinh, suaCauHinh, themCauHinh} from "@/services/quan-tri-vien/cau-hinh";
 import dayjs from "dayjs";
+import FileUploadUrl from "@/app/components/common/FileUploadUrl";
 
 const KIEU_DU_LIEU = [
     {id: 7, value: 'BOOLEAN'},
@@ -15,6 +16,7 @@ const KIEU_DU_LIEU = [
     {id: 3, value: 'BIGINT'},
     {id: 4, value: 'TIMESTAMP'},
     {id: 5, value: 'DATE'},
+    {id: 8, value: 'FILE'},
 ];
 
 export default function Page() {
@@ -168,6 +170,8 @@ export default function Page() {
                 return <DatePicker showTime style={{width: "100%"}} format="YYYY-MM-DD HH:mm:ss"/>;
             case "TEXT":
                 return <Input.TextArea rows={4}/>;
+            case "FILE":
+                return <FileUploadUrl/>
             default:
                 return <Input/>;
         }

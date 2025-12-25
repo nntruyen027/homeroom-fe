@@ -95,3 +95,14 @@ export async function layThongTinCaNhanHocSinh() {
     const res = await api.get("/hoc-sinh");
     return res.data;
 }
+
+export async function layThamSo(key) {
+    const res = await api.get(`auth/tham-so/${key}`);
+    return res.data;
+}
+
+export async function layFaicon() {
+    const res = await api.get(`auth/tham-so/FAVICON`);
+    return res.data;
+}
+

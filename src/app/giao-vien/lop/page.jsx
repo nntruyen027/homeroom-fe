@@ -6,6 +6,7 @@ import {layDsLop, sua, taoLop, xoaLop} from "@/services/giao-vien/lop";
 import {useDebounce} from "@/hook/data";
 import {EllipsisOutlined} from "@ant-design/icons";
 import {useTruongLopSelect} from "@/hook/useTruongLop";
+import FileUploadUrl from "@/app/components/common/FileUploadUrl";
 
 
 export default function Page() {
@@ -169,7 +170,7 @@ export default function Page() {
     useEffect(() => {
         fetchData(1, pagination.pageSize, debouncedSearch);
     }, [debouncedSearch]);
-    
+
 
     /* --------------------------------------------
      * 9. UI RENDER
@@ -256,7 +257,7 @@ export default function Page() {
 
 
                     <Form.Item label="Hình ảnh" name="hinhAnh">
-                        <Input placeholder="Nhập link hình ảnh..."/>
+                        <FileUploadUrl accept=".jpg,.png"/>
                     </Form.Item>
 
                 </Form>

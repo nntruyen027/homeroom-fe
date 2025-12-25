@@ -7,8 +7,10 @@ import {useModal} from "@/store/modal";
 import {isTokenValid} from "@/utils/auth";
 import DoiMatKhauModal from "./DoiMatKhauModal";
 import DoiThongTinModal from "@/app/DoiThongTinModal";
+import DynamicFavicon from "@/hook/useDynamicFavicon";
 
 export default function InnerLayout({children}) {
+
     const {message} = App.useApp();
     const router = useRouter();
     const pathname = usePathname();
@@ -39,6 +41,7 @@ export default function InnerLayout({children}) {
 
     return (
         <>
+            <DynamicFavicon/>
             <DoiMatKhauModal
                 open={isUpdatePassOpen}
                 onClose={SetIsUpdatePassClose}
