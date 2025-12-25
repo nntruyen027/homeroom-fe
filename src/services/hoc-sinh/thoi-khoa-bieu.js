@@ -1,11 +1,20 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/hoc-sinh/thoi-khoa-bieu',
+    baseURL: process.env.NEXT_PUBLIC_BE + '/hoc-sinh/thoi-khoa-bieu/',
     headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("jwtToken")}`,
     }
+});
+
+api.interceptors.request.use((config) => {
+    if (typeof window !== "undefined") {
+        const token = localStorage.getItem("jwtToken");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    }
+    return config;
 });
 
 export async function layDsTkb() {
