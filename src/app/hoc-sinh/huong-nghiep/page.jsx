@@ -74,8 +74,19 @@ export default function Page() {
 
     const handleEdit = async (record) => {
         setEditingHoatDong(record.id);
-        const log = await layLogHuongNghiepTheoHd(record.id);
-        form.setFieldsValue(log);
+        try {
+            const log = await layLogHuongNghiepTheoHd(record.id);
+            form.setFieldsValue(log);
+        } catch (e) {
+            const log = {
+                nnQuanTam: "",
+                mucDoHieuBiet: 0,
+                caiThien: "",
+                kyNangHanChe: ""
+            };
+            form.setFieldsValue(log);
+        }
+
         setModalVisible(true);
     };
 
