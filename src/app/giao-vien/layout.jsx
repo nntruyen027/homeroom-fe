@@ -125,7 +125,7 @@ export default function RootLayout({children}) {
             >
                 {!collapsed && (
                     <div className="text-2xl font-bold text-center py-4">
-                        Sổ chủ nhiệm điện tử
+                        Hồ sơ hướng nghiệp cá nhân
                     </div>
                 )}
 

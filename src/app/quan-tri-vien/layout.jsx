@@ -139,7 +139,7 @@ export default function RootLayout({children}) {
             >
                 {!collapsed && (
                     <div className="text-black text-2xl pb-10 text-center p-2 font-black bg-white">
-                        Sổ chủ nhiệm điện tử
+                        Hồ sơ hướng nghiệp cá nhân
                     </div>
                 )}
 
